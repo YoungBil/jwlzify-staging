@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
@@ -7,156 +7,51 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Jwlzify</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<link rel="stylesheet" href="home.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/SplitText.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
 <script>
-tailwind.config = {
-  darkMode:"class",
-  theme:{extend:{colors:{
-    "primary":"#3c6474","on-primary":"#ffffff",
-    "primary-container":"#b9e2f5","on-primary-container":"#3e6576",
-    "primary-fixed":"#c0e9fc","primary-fixed-dim":"#a4cddf",
-    "secondary":"#5e5e5b","on-secondary":"#ffffff",
-    "secondary-container":"#e1dfdb","on-secondary-container":"#63635f",
-    "surface":"#fbf9f9","surface-dim":"#dbdad9",
-    "surface-container-lowest":"#ffffff","surface-container-low":"#f5f3f3",
-    "surface-container":"#efeded","surface-container-high":"#e9e8e7",
-    "surface-container-highest":"#e3e2e2",
-    "on-surface":"#1b1c1c","on-surface-variant":"#41484b",
-    "outline":"#71787c","outline-variant":"#c1c7cb",
-    "inverse-surface":"#303031","inverse-primary":"#a4cddf",
-    "background":"#fbf9f9",
-  }}}
-}
+/* Pre-paint boot: hide animated elements only when motion is allowed, with a
+   safety timer that restores everything if the animation runtime never boots. */
+(function () {
+  var d = document.documentElement, rm = false, seen = false;
+  try { rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  try { seen = sessionStorage.getItem('jwlzIntroSeen') === '1'; } catch (e) {}
+  if (!rm) {
+    d.classList.add('motion-on');
+    if (!seen) d.classList.add('intro-pending');
+    setTimeout(function () {
+      if (!window.__jwlzBooted) d.classList.remove('motion-on', 'intro-pending');
+    }, 3000);
+  }
+})();
 </script>
-<style>
-/* ── Hero sky fallback ── */
-.hero-bg { background: linear-gradient(180deg,#1a2e38 0%,#243e4a 35%,#2c4e5c 60%,#1a2e38 100%); }
-
-/* ── Hero headline ── */
-.hero-h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(42px, 5.5vw, 72px);
-  font-weight: 600;
-  font-style: italic;
-  line-height: 1.08;
-  letter-spacing: -0.01em;
-  color: white;
-  text-shadow: 0 2px 28px rgba(0,0,0,0.28);
-}
-
-/* ── Transparent nav — nuclear override ── */
-nav, header {
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
-  border-bottom: none !important;
-}
-nav.nav-visible, header.nav-visible,
-nav:hover, header:hover {
-  background: rgba(255,255,255,0.97) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.06) !important;
-  transition: background 0.35s ease, backdrop-filter 0.35s ease;
-}
-
-/* Nav links: white default → dark on nav-visible */
-.nav-link {
-  color: rgba(255,255,255,0.92) !important;
-  border-bottom: 2px solid transparent !important;
-  transition: color 0.25s ease, border-color 0.25s ease, opacity 0.25s ease;
-}
-.nav-link.nav-active {
-  color: rgba(255,255,255,0.96) !important;
-  font-weight: 600 !important;
-}
-#siteHeader .nav-link:hover {
-  border-bottom: 2px solid rgba(255,255,255,0.55) !important;
-}
-#siteHeader.nav-visible .nav-link,
-#siteHeader:hover .nav-link {
-  color: #1b1c1c !important;
-  border-bottom: 2px solid transparent !important;
-  opacity: 1 !important;
-}
-#siteHeader.nav-visible .nav-link:hover,
-#siteHeader:hover .nav-link:hover {
-  color: #3c6474 !important;
-  border-bottom: 2px solid rgba(60,100,116,0.5) !important;
-  opacity: 1 !important;
-}
-#siteHeader.nav-visible .nav-link.nav-active,
-#siteHeader:hover .nav-link.nav-active {
-  color: #3c6474 !important;
-  border-bottom: 2px solid #3c6474 !important;
-}
-
-/* Brand logo */
-.brand-logo {
-  color: rgba(255,255,255,0.92) !important;
-  transition: color 0.35s ease;
-}
-#siteHeader.nav-visible .brand-logo,
-#siteHeader:hover .brand-logo { color: #1b1c1c !important; }
-
-/* Auth elements — white on transparent nav, dark on white nav */
-#signInBtn { color: rgba(255,255,255,0.8) !important; transition: color 0.35s ease; }
-#siteHeader.nav-visible #signInBtn,
-#siteHeader:hover #signInBtn { color: rgba(65,72,75,0.8) !important; }
-#userName { color: rgba(255,255,255,0.9) !important; transition: color 0.35s ease; }
-#siteHeader.nav-visible #userName,
-#siteHeader:hover #userName { color: #1b1c1c !important; }
-
-/* Mobile menu icon */
-.nav-menu-btn {
-  color: rgba(255,255,255,0.88) !important;
-  transition: color 0.35s ease;
-}
-nav.nav-visible .nav-menu-btn,
-header.nav-visible .nav-menu-btn { color: #1b1c1c !important; }
-
-/* GENERATE button */
-#navGenerateBtn {
-  background: transparent !important;
-  color: rgba(255,255,255,0.92) !important;
-  border: 1.5px solid rgba(255,255,255,0.52) !important;
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  border-radius: 0.5rem;
-  padding: 12px 28px;
-  cursor: pointer;
-  transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
-}
-nav.nav-visible #navGenerateBtn,
-header.nav-visible #navGenerateBtn {
-  background: #3c6474 !important;
-  color: white !important;
-  border-color: #3c6474 !important;
-  box-shadow: 0 8px 28px rgba(60,100,116,0.28);
-}
-</style>
 </head>
-<body class="bg-[#fbf9f9] text-[#1b1c1c] min-h-screen">
+<body>
+
+<!-- ════════════════════════════
+     INTRO REVEAL (once per session)
+════════════════════════════ -->
+<div id="intro" aria-hidden="true">
+  <div class="intro-mark">JWLZIFY</div>
+  <div class="intro-line"><span></span></div>
+</div>
 
 <!-- ════════════════════════════
      NAVIGATION
 ════════════════════════════ -->
-<header class="fixed top-0 w-full z-50" id="siteHeader">
-  <nav id="mainNav" class="flex justify-between items-center w-full max-w-[1600px] mx-auto px-4 md:px-16 py-5">
-    <div class="flex items-center gap-10">
-      <a href="index.html" class="brand-logo" style="font-family:'Playfair Display',serif;font-size:22px;font-weight:600;letter-spacing:0.32em;text-transform:uppercase;">JWLZIFY</a>
-      <div class="hidden lg:flex items-center gap-8">
+<header id="siteHeader">
+  <nav id="mainNav" class="nav-inner">
+    <div class="nav-left">
+      <a href="index.html" class="brand-logo">JWLZIFY</a>
+      <div class="nav-links">
         <a href="index.html"       class="nav-link nav-active">Home</a>
         <a href="collections.html" class="nav-link">Collections</a>
         <a href="ailab.html"       class="nav-link">AI Lab</a>
@@ -164,22 +59,19 @@ header.nav-visible #navGenerateBtn {
         <a href="support.html"     class="nav-link">Support</a>
       </div>
     </div>
-    <div class="flex items-center gap-5">
-      <div class="hidden lg:flex items-center">
-        <button id="signInBtn" onclick="signInWithGoogle()"
-          style="font-family:Inter,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.08em;background:transparent;border:none;cursor:pointer;padding:6px 0;transition:color 0.2s ease;">Sign In</button>
+    <div class="nav-right">
+      <div class="nav-auth">
+        <button id="signInBtn" onclick="signInWithGoogle()">Sign In</button>
         <div id="userMenu" style="display:none;align-items:center;gap:8px;position:relative;cursor:pointer;" onclick="toggleDropdown()">
-          <img id="userAvatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(60,100,116,0.3);" src="" alt="avatar">
-          <span id="userName" style="font-family:Inter;font-size:13px;font-weight:500;"></span>
-          <div id="userDropdown" style="display:none;position:absolute;top:calc(100% + 12px);right:0;background:white;border:0.5px solid rgba(193,199,203,0.6);border-radius:12px;padding:8px;min-width:160px;box-shadow:0 8px 32px rgba(0,0,0,0.08);z-index:1000;">
-            <button onclick="signOut()" style="width:100%;text-align:left;padding:10px 14px;font-family:Inter;font-size:13px;color:#1b1c1c;background:transparent;border:none;border-radius:8px;cursor:pointer;transition:background 0.15s ease;" onmouseover="this.style.background='#f5f3f3'" onmouseout="this.style.background='transparent'">Sign Out</button>
+          <img id="userAvatar" src="" alt="avatar">
+          <span id="userName"></span>
+          <div id="userDropdown">
+            <button onclick="signOut()">Sign Out</button>
           </div>
         </div>
       </div>
-      <a href="ailab.html">
-        <button id="navGenerateBtn" class="active:scale-95">GENERATE</button>
-      </a>
-      <button class="lg:hidden nav-menu-btn" aria-label="Menu" style="background:none;border:none;">
+      <span class="magnet"><a href="ailab.html" id="navGenerateBtn" class="btn-lux btn-lux-sm">GENERATE</a></span>
+      <button class="nav-menu-btn" aria-label="Menu">
         <span class="material-symbols-outlined">menu</span>
       </button>
     </div>
@@ -191,219 +83,148 @@ header.nav-visible #navGenerateBtn {
 <!-- ════════════════════════════
      HERO — VIDEO BACKGROUND
 ════════════════════════════ -->
-<section class="relative min-h-screen flex flex-col items-center justify-center overflow-hidden hero-bg" id="hero">
-
-  <!-- Video background -->
-  <video autoplay muted loop playsinline
-    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
-    <source src="jwlzify-front-cover-animation.mp4" type="video/mp4">
-  </video>
-
-  <!-- Cinematic dark overlay for white text -->
-  <div class="absolute inset-0 pointer-events-none" style="z-index:1;
-    background: linear-gradient(180deg,
-      rgba(0,0,0,0.42) 0%,
-      rgba(0,0,0,0.24) 38%,
-      rgba(0,0,0,0.32) 72%,
-      rgba(0,0,0,0.45) 100%);"></div>
-
-  <!-- Ice crystal particles -->
-  <canvas id="crystalCanvas" class="absolute inset-0 w-full h-full pointer-events-none" style="z-index:2;"></canvas>
-
-  <!-- Hero content -->
-  <div class="relative w-full max-w-[1600px] mx-auto px-4 md:px-16 text-center"
-       style="z-index:3;padding-top:10vh;padding-bottom:0;">
-    <div class="mx-auto max-w-4xl flex flex-col items-center">
-
-      <!-- Headline -->
-      <h1 class="hero-h1 mb-12">
-        Imagined by You.<br>
-        <span style="color:rgba(255,255,255,0.95);font-weight:400;font-family:'Cormorant Garamond',serif;font-style:italic;">Perfected by AI.</span>
-      </h1>
-
-      <!-- Tagline -->
-      <p class="mb-16" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:clamp(18px,2vw,24px);color:rgba(255,255,255,0.78);letter-spacing:0.04em;">
-        Wear a piece no one else will ever own.
-      </p>
-
-      <!-- CTA -->
-      <a href="ailab.html">
-        <button class="label text-white px-16 py-5 rounded-lg active:scale-[0.97] transition-all btn-glow"
-                style="background:#3c6474;font-size:13px;letter-spacing:0.22em;border:none;">
-          Start Creating
-        </button>
-      </a>
-
-    </div>
+<section id="hero">
+  <div class="hero-media">
+    <video id="heroVideo" autoplay muted loop playsinline>
+      <source src="jwlzify-front-cover-animation.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="hero-shade" aria-hidden="true"></div>
+  <div class="hero-content">
+    <h1 class="hero-h1" id="heroTitle">Imagined by You.<br><span class="hero-h1-em">Perfected by AI.</span></h1>
+    <p class="hero-tagline">Wear a piece no one else will ever own.</p>
+    <span class="magnet hero-cta"><a href="ailab.html" class="btn-lux">Start Creating</a></span>
   </div>
 </section>
 
+<!-- ════════════════════════════
+     CATEGORY MARQUEE
+════════════════════════════ -->
+<div class="marquee" id="marquee" aria-hidden="true">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-seq">Rings <i>·</i> Chains <i>·</i> Bracelets <i>·</i> Pendants <i>·</i> Earrings <i>·</i> </span><span class="marquee-seq">Rings <i>·</i> Chains <i>·</i> Bracelets <i>·</i> Pendants <i>·</i> Earrings <i>·</i> </span>
+  </div>
+</div>
 
 <!-- ════════════════════════════
      FEATURES BENTO GRID
 ════════════════════════════ -->
-<section class="py-32 max-w-[1600px] mx-auto px-4 md:px-16" id="features">
+<section class="section" id="features">
+  <div class="shell">
 
-  <div class="flex flex-col lg:flex-row lg:items-end gap-6 mb-20">
-    <div class="max-w-xl">
-      <span class="eyebrow">Our Capabilities</span>
-      <h2 class="h-section mb-4">Crafting the Future</h2>
-      <p class="body-lg">We build jewelry the way it should have always been made — starting with you. Every piece begins as a thought, refined by AI, and brought to life by hand. No catalogues. No compromises. Just yours.</p>
+    <div class="section-head" data-rvg>
+      <div class="section-head-copy">
+        <span class="eyebrow rv">Our Capabilities</span>
+        <h2 class="h-section rv">Crafting the Future</h2>
+        <p class="body-lg rv">We build jewelry the way it should have always been made — starting with you. Every piece begins as a thought, refined by AI, and brought to life by hand. No catalogues. No compromises. Just yours.</p>
+      </div>
+      <div class="head-rule" aria-hidden="true"></div>
     </div>
-    <div class="hidden lg:block h-px flex-1 bg-[#c1c7cb]/30 ml-12 mb-2"></div>
-  </div>
 
-  <div class="grid grid-cols-12 gap-8">
+    <div class="bento" data-rvg>
 
-    <!-- AI Concepts — 8 cols -->
-    <div class="col-span-12 lg:col-span-8 glass border border-[#c1c7cb]/20 rounded-[32px] p-10 md:p-12
-                flex flex-col overflow-hidden group feat-large"
-         style="min-height:460px;box-shadow:0 20px 60px rgba(0,0,0,0.04);">
-      <div class="flex flex-col md:flex-row gap-10">
-        <div class="flex-1">
-          <div class="flex items-center justify-center rounded-full mb-6" style="width:48px;height:48px;background:rgba(60,100,116,0.08);">
-            <span class="material-symbols-outlined" style="color:#3c6474;font-size:24px;">model_training</span>
+      <!-- AI Concepts — wide -->
+      <div class="bento-card bento-wide rv">
+        <div class="bento-split">
+          <div class="bento-copy">
+            <div class="icon-chip" aria-hidden="true"><span class="material-symbols-outlined">model_training</span></div>
+            <h3 class="h-card">AI-Generated Concepts</h3>
+            <p class="body-copy">Our AI draws on a vast design vocabulary to generate forms that feel entirely new — pieces that couldn't have existed without you asking for them.</p>
           </div>
-          <h3 class="h-card mb-4">AI-Generated Concepts</h3>
-          <p class="body-copy max-w-sm">
-            Our AI draws on a vast design vocabulary to generate forms that feel entirely new — pieces that couldn't have existed without you asking for them.
-          </p>
-        </div>
-        <div class="flex-1 grid grid-cols-2 gap-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-700">
-          <img class="feat-img w-full h-60 rounded-2xl object-cover"
-               src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0937fENp8cSNmJtoHJFhhQvaY458o9In7y2byk1Ir_TnRIne7sy7GXGcfekWaAVNK7VR0RnzUrCgAbjp6emfWUl73ZOAeM9nC29LpYG3ca7vjurpYnmCc-mLs3xm2WN7zcozmEeaQ-4skvrtgDN2Kn_MWmipgTQTnicUIoOTiMfaOG9u4zHFYLEA_W8Z0Jm94kseJuFYjpHlc1AwzyPnDbX-7cELpXtKF9XYdp-3BhYRJ-vHsoayIzIz6W79-5xC-aJa0QUHGcIwE"
-               alt="AI design sketches"
-               onerror="this.style.cssText='background:linear-gradient(135deg,#b9e2f5,#a4cddf);min-height:240px;border-radius:1rem;';this.removeAttribute('src')"/>
-          <img class="feat-img w-full h-60 rounded-2xl object-cover"
-               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAv1LoA4uj1akdQaCLcVX3JA_O_8Mtay00rYmTClhgOANfm64GInyRfvPrTeoWdOHnpq3YeCVFdsuTgRDjPbpZK4HL4pYNmBNaBJ7K6kCzLKRmuXRNKf2OyhviQmurDaPiSEBBoQmf1D49T1mAzhPykrG-dIpmkkAiMYuxWGL9-dff6_vTZSZBozS1_ys2RWPj9W08M4uXxDLfQPmj5mG9c0DBJsx7wRwI9Rnji5VIoJh_mco-nAwt4qJSWi3y1GcRazmMPJ9J4jQQ7"
-               alt="AI concept render"
-               onerror="this.style.cssText='background:linear-gradient(135deg,#a4cddf,#8fb8cc);min-height:240px;border-radius:1rem;';this.removeAttribute('src')"/>
-        </div>
-      </div>
-    </div>
-
-    <!-- Real-time Customization — 4 cols -->
-    <div class="col-span-12 lg:col-span-4 bg-[#f5f3f3] border border-[#c1c7cb]/10 rounded-[32px]
-                p-10 md:p-12 flex flex-col justify-center text-center group hover:bg-white transition-colors duration-500">
-      <div class="mb-8 flex justify-center">
-        <div class="flex items-center justify-center rounded-full group-hover:scale-110 transition-transform"
-             style="width:48px;height:48px;background:rgba(60,100,116,0.08);">
-          <span class="material-symbols-outlined" style="color:#3c6474;font-size:24px;">tune</span>
-        </div>
-      </div>
-      <h3 class="h-card mb-4">Real-time Customization</h3>
-      <p class="body-copy px-2">
-        Set carats, clarity, and metal composition, then see the AI render your
-        design and refine it from there.
-      </p>
-    </div>
-
-    <!-- Handcrafted Finish — 4 cols dark -->
-    <div class="col-span-12 lg:col-span-4 rounded-[32px] flex flex-col items-start justify-end
-                min-h-[400px] relative overflow-hidden group" style="background:#303031;">
-      <img class="absolute inset-0 w-full h-full object-cover opacity-50
-                  group-hover:scale-110 group-hover:opacity-65 transition-all duration-1000"
-           src="https://lh3.googleusercontent.com/aida-public/AB6AXuADZi08S320hK7KvmaH8ZaIQ_jjZp8pAruouV7vokp-wK5FZGpVHHf4aC972DsuIdrA3ZwrufdRdveGbcDpE_zxy1X3DUtHoZSE0g0Cry4AFKlSp3PZm7RNeeZp_5Iokg82vOTNgUO_wxJO6vFxEejdZzkol-gV5jSI76mZyj8dO-6R0_9aOkF-QaaKdFWxJ6RqzksRE2sjKWYake8G2xSBjWZMRmoCeGlyfzgzUrjkR8OUpIDMre_ZUCcAL5WJptF1y0Ztph6FFRxA"
-           alt="Master jeweler atelier"
-           onerror="this.style.opacity='0'"/>
-      <div class="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent"></div>
-      <div class="relative z-10 p-10">
-        <h3 class="mb-3 text-white" style="font-family:'Playfair Display',serif;font-size:28px;font-weight:500;line-height:1.3;">Handcrafted Finish</h3>
-        <p style="color:rgba(255,255,255,0.6);font-family:'Inter',sans-serif;font-size:16px;line-height:1.7;">
-          Family-run manufacturing partners bring AI precision to life with traditional techniques.
-        </p>
-      </div>
-    </div>
-
-    <!-- Ethical Sourcing — 8 cols -->
-    <div class="col-span-12 lg:col-span-8 bg-[#efeded] border border-[#c1c7cb]/10 rounded-[32px]
-                p-10 md:p-12 flex flex-col md:flex-row items-center gap-12 group">
-      <div class="flex-1">
-        <div class="mb-6">
-          <div class="flex items-center justify-center rounded-full" style="width:48px;height:48px;background:rgba(60,100,116,0.08);">
-            <span class="material-symbols-outlined" style="color:#3c6474;font-size:24px;">eco</span>
+          <div class="bento-imgs">
+            <div class="img-lux"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0937fENp8cSNmJtoHJFhhQvaY458o9In7y2byk1Ir_TnRIne7sy7GXGcfekWaAVNK7VR0RnzUrCgAbjp6emfWUl73ZOAeM9nC29LpYG3ca7vjurpYnmCc-mLs3xm2WN7zcozmEeaQ-4skvrtgDN2Kn_MWmipgTQTnicUIoOTiMfaOG9u4zHFYLEA_W8Z0Jm94kseJuFYjpHlc1AwzyPnDbX-7cELpXtKF9XYdp-3BhYRJ-vHsoayIzIz6W79-5xC-aJa0QUHGcIwE" alt="AI design sketches" onerror="this.parentElement.classList.add('img-missing');this.remove()"></div>
+            <div class="img-lux"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAv1LoA4uj1akdQaCLcVX3JA_O_8Mtay00rYmTClhgOANfm64GInyRfvPrTeoWdOHnpq3YeCVFdsuTgRDjPbpZK4HL4pYNmBNaBJ7K6kCzLKRmuXRNKf2OyhviQmurDaPiSEBBoQmf1D49T1mAzhPykrG-dIpmkkAiMYuxWGL9-dff6_vTZSZBozS1_ys2RWPj9W08M4uXxDLfQPmj5mG9c0DBJsx7wRwI9Rnji5VIoJh_mco-nAwt4qJSWi3y1GcRazmMPJ9J4jQQ7" alt="AI concept render" onerror="this.parentElement.classList.add('img-missing');this.remove()"></div>
           </div>
         </div>
-        <h3 class="h-card mb-4">Ethical Sourcing</h3>
-        <p class="body-copy">
-          Every stone we use is ethically sourced and fully traceable. You know exactly what you're wearing and where it came from.
-        </p>
       </div>
-      <div class="flex-1 h-64 w-full rounded-2xl overflow-hidden shadow-2xl">
-        <img class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsGnZIZvXML7J0FDUB6qTEYalGeQ8dZYrzyB5qJruvVxezjFV2CJeCZSd6WrdgEP8g-rPsWzLdSoUQaLLIyphR3kgR2B94MHYWJTO_mKBdD3mHHGsaF9xoOm3SRuKNvLLkhx1MjGcHAgY25Ebn06Zvt2d5bpHbTH6R_5belOBVS1gPYcOHtclBIUDnqkC15o4B9dfgNdiHkVspJJrrsI1HXixu7z1i-6YKw_OVbCXxA0REi9x1RqKlqWbVMER05WSYEjM0eoRoliiB"
-             alt="Ethically sourced diamonds"
-             onerror="this.style.cssText='background:linear-gradient(135deg,#b9e2f5,#6b9db5);';this.removeAttribute('src')"/>
-      </div>
-    </div>
 
+      <!-- Real-time Customization -->
+      <div class="bento-card bento-center rv">
+        <div class="icon-chip" aria-hidden="true"><span class="material-symbols-outlined">tune</span></div>
+        <h3 class="h-card">Real-time Customization</h3>
+        <p class="body-copy">Set carats, clarity, and metal composition, then see the AI render your design and refine it from there.</p>
+      </div>
+
+      <!-- Handcrafted Finish — image card -->
+      <div class="bento-card bento-photo rv">
+        <img class="bento-photo-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADZi08S320hK7KvmaH8ZaIQ_jjZp8pAruouV7vokp-wK5FZGpVHHf4aC972DsuIdrA3ZwrufdRdveGbcDpE_zxy1X3DUtHoZSE0g0Cry4AFKlSp3PZm7RNeeZp_5Iokg82vOTNgUO_wxJO6vFxEejdZzkol-gV5jSI76mZyj8dO-6R0_9aOkF-QaaKdFWxJ6RqzksRE2sjKWYake8G2xSBjWZMRmoCeGlyfzgzUrjkR8OUpIDMre_ZUCcAL5WJptF1y0Ztph6FFRxA" alt="Master jeweler atelier" onerror="this.style.opacity='0'">
+        <div class="bento-photo-shade" aria-hidden="true"></div>
+        <div class="bento-photo-copy">
+          <h3 class="h-card">Handcrafted Finish</h3>
+          <p class="body-copy">Family-run manufacturing partners bring AI precision to life with traditional techniques.</p>
+        </div>
+      </div>
+
+      <!-- Ethical Sourcing — wide -->
+      <div class="bento-card bento-wide rv">
+        <div class="bento-split">
+          <div class="bento-copy">
+            <div class="icon-chip" aria-hidden="true"><span class="material-symbols-outlined">eco</span></div>
+            <h3 class="h-card">Ethical Sourcing</h3>
+            <p class="body-copy">Every stone we use is ethically sourced and fully traceable. You know exactly what you're wearing and where it came from.</p>
+          </div>
+          <div class="bento-imgs bento-imgs-one">
+            <div class="img-lux"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsGnZIZvXML7J0FDUB6qTEYalGeQ8dZYrzyB5qJruvVxezjFV2CJeCZSd6WrdgEP8g-rPsWzLdSoUQaLLIyphR3kgR2B94MHYWJTO_mKBdD3mHHGsaF9xoOm3SRuKNvLLkhx1MjGcHAgY25Ebn06Zvt2d5bpHbTH6R_5belOBVS1gPYcOHtclBIUDnqkC15o4B9dfgNdiHkVspJJrrsI1HXixu7z1i-6YKw_OVbCXxA0REi9x1RqKlqWbVMER05WSYEjM0eoRoliiB" alt="Ethically sourced diamonds" onerror="this.parentElement.classList.add('img-missing');this.remove()"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </section>
 
+<div class="hairline-divider" aria-hidden="true"><span></span></div>
 
 <!-- ════════════════════════════
      WHAT WE OFFER
 ════════════════════════════ -->
-<section class="py-32" id="offer"
-         style="background-image:url('whatweoffer.png?v=2');background-size:cover;background-position:center;background-repeat:no-repeat;position:relative;">
-  <div class="absolute inset-0" style="background:rgba(10,24,32,0.58);"></div>
-  <div class="max-w-[1600px] mx-auto px-4 md:px-16" style="position:relative;z-index:1;">
+<section class="section section-photo" id="offer" style="background-image:url('whatweoffer.png?v=2');">
+  <div class="section-photo-shade" aria-hidden="true"></div>
+  <div class="shell">
 
-    <div class="flex flex-col lg:flex-row lg:items-end gap-6 mb-20">
-      <div class="max-w-xl">
-        <span class="eyebrow" style="color:rgba(185,226,245,0.82);">OUR MATERIALS</span>
-        <h2 class="h-section mb-4" style="color:#ffffff;">What We Offer</h2>
+    <div class="section-head" data-rvg>
+      <div class="section-head-copy">
+        <span class="eyebrow rv">OUR MATERIALS</span>
+        <h2 class="h-section rv">What We Offer</h2>
       </div>
-      <div class="hidden lg:block h-px flex-1 bg-[#c1c7cb]/30 ml-12 mb-2"></div>
+      <div class="head-rule" aria-hidden="true"></div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="offer-grid" data-rvg>
 
-      <div class="offer-card">
-        <div class="flex items-center justify-center rounded-full mb-5" style="width:48px;height:48px;background:rgba(60,100,116,0.08);">
-          <span class="material-symbols-outlined" style="color:#3c6474;font-size:24px;">diamond</span>
-        </div>
-        <h3 class="h-sub mb-3">925 Silver + Moissanite VVSD</h3>
+      <div class="offer-lux rv">
+        <div class="icon-chip" aria-hidden="true"><span class="material-symbols-outlined">diamond</span></div>
+        <h3 class="h-sub">925 Silver + Moissanite VVSD</h3>
         <p class="body-copy">Maximum brilliance at the most accessible price point. Moissanite refracts light more intensely than diamond.</p>
       </div>
 
-      <div class="offer-card">
-        <div class="flex items-center justify-center rounded-full mb-5" style="width:48px;height:48px;background:rgba(60,100,116,0.08);">
-          <span class="material-symbols-outlined" style="color:#3c6474;font-size:24px;">radio_button_unchecked</span>
-        </div>
-        <h3 class="h-sub mb-3">925 Silver + Lab Diamond VVS</h3>
+      <div class="offer-lux rv">
+        <div class="icon-chip" aria-hidden="true"><span class="material-symbols-outlined">radio_button_unchecked</span></div>
+        <h3 class="h-sub">925 Silver + Lab Diamond VVS</h3>
         <p class="body-copy">Certified lab-grown diamonds in sterling silver. Ethically created, chemically identical to mined.</p>
       </div>
 
-      <div class="offer-card">
-        <div class="flex items-center justify-center rounded-full mb-5" style="width:48px;height:48px;background:rgba(60,100,116,0.08);">
-          <span class="material-symbols-outlined" style="color:#3c6474;font-size:24px;">workspace_premium</span>
-        </div>
-        <h3 class="h-sub mb-3">10k Gold + Lab Diamond</h3>
+      <div class="offer-lux rv">
+        <div class="icon-chip" aria-hidden="true"><span class="material-symbols-outlined">workspace_premium</span></div>
+        <h3 class="h-sub">10k Gold + Lab Diamond</h3>
         <p class="body-copy">A step into gold with the sustainability of lab-grown stones. Great balance of luxury and value.</p>
       </div>
 
-      <div class="offer-card">
-        <div class="flex items-center justify-center rounded-full mb-5" style="width:48px;height:48px;background:rgba(60,100,116,0.08);">
-          <span class="material-symbols-outlined" style="color:#3c6474;font-size:24px;">verified</span>
-        </div>
-        <h3 class="h-sub mb-3">10k Gold + Natural Diamond VS/VVS</h3>
+      <div class="offer-lux rv">
+        <div class="icon-chip" aria-hidden="true"><span class="material-symbols-outlined">verified</span></div>
+        <h3 class="h-sub">10k Gold + Natural Diamond VS/VVS</h3>
         <p class="body-copy">Natural diamonds in 10k gold. VS/VVS clarity — near flawless to the naked eye.</p>
       </div>
 
-      <div class="offer-card">
-        <div class="flex items-center justify-center rounded-full mb-5" style="width:48px;height:48px;background:rgba(60,100,116,0.08);">
-          <span class="material-symbols-outlined" style="color:#3c6474;font-size:24px;">star</span>
-        </div>
-        <h3 class="h-sub mb-3">14k Gold + Lab Diamond</h3>
+      <div class="offer-lux rv">
+        <div class="icon-chip" aria-hidden="true"><span class="material-symbols-outlined">star</span></div>
+        <h3 class="h-sub">14k Gold + Lab Diamond</h3>
         <p class="body-copy">Premium gold purity with certified lab-grown diamonds. The JWLZIFY signature tier.</p>
       </div>
 
-      <div class="offer-card">
-        <div class="flex items-center justify-center rounded-full mb-5" style="width:48px;height:48px;background:rgba(60,100,116,0.08);">
-          <span class="material-symbols-outlined" style="color:#3c6474;font-size:24px;">auto_awesome</span>
-        </div>
-        <h3 class="h-sub mb-3">14k Gold + Natural Diamond VS/VVS</h3>
+      <div class="offer-lux rv">
+        <div class="icon-chip" aria-hidden="true"><span class="material-symbols-outlined">auto_awesome</span></div>
+        <h3 class="h-sub">14k Gold + Natural Diamond VS/VVS</h3>
         <p class="body-copy">The pinnacle. 14k gold with natural VS/VVS diamonds. Heirloom quality.</p>
       </div>
 
@@ -411,211 +232,179 @@ header.nav-visible #navGenerateBtn {
   </div>
 </section>
 
+<!-- ════════════════════════════
+     BRAND LINE
+════════════════════════════ -->
+<section class="section" id="brandline">
+  <p class="brand-line">
+    <span class="brand-base">Built to disrupt, designed to last.</span>
+    <span class="brand-shine" aria-hidden="true">Built to disrupt, designed to last.</span>
+  </p>
+</section>
+
+<div class="hairline-divider" aria-hidden="true"><span></span></div>
 
 <!-- ════════════════════════════
      TRENDING GALLERY
 ════════════════════════════ -->
-<section class="py-32 bg-white" id="gallery">
-  <div class="max-w-[1600px] mx-auto px-4 md:px-16">
+<section class="section" id="gallery">
+  <div class="shell">
 
-    <div class="flex flex-col lg:flex-row justify-between items-end mb-20 gap-6">
-      <div class="max-w-xl">
-        <span class="eyebrow">Community</span>
-        <h2 class="h-section mb-4">Trending Creations</h2>
-        <p class="body-lg">Inspired by the collective imagination of our global community.</p>
+    <div class="section-head section-head-split" data-rvg>
+      <div class="section-head-copy">
+        <span class="eyebrow rv">Community</span>
+        <h2 class="h-section rv">Trending Creations</h2>
+        <p class="body-lg rv">Inspired by the collective imagination of our global community.</p>
       </div>
-      <a href="collections.html" class="btn-ghost flex-shrink-0" style="font-size:12px;letter-spacing:0.22em;">
-        View Full Gallery
-        <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
-      </a>
+      <a href="collections.html" class="link-draw rv">View Full Gallery <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 items-start">
+    <div class="gal-grid">
 
-      <div class="gal-card group cursor-pointer">
-        <div class="aspect-[3/4] rounded-2xl overflow-hidden mb-6 relative"
-             style="box-shadow:0 20px 40px rgba(0,0,0,0.06);">
-          <img class="gal-img w-full h-full object-cover"
-               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPdCeguYQnaPVMEU_e-Rbn4HgDq5zRSjFpU8kuIwpcH-3i4VMAGJb843gN6MZSoB2j4_9dT9fSX9K35aoAFb-eWGNP-M1m8YzHr75rUnqVbhDdBry3S7uuRqH1vZPWMYTKmsp00uvruqisx_8ZVrKej-e-hooyos4-CQ8AM0zt46IgmsQuE9uGMtJKLmWDLvxxdm4jAJn5O7t4Tw3S83NkwNmzR7sFljEr3ey-KQI8SKSYoQYSgL8o944bbBWrcZwys9o-2dovZrbz"
-               alt="The Nebula Drop"
-               onerror="this.closest('.aspect-\\[3\\/4\\]').style.background='linear-gradient(135deg,#efeded,#b9e2f5)'"/>
-          <div class="gal-overlay absolute inset-0 flex items-center justify-center"
-               style="background:rgba(185,226,245,0.4);">
-            <span class="bg-white px-8 py-3 rounded-lg label shadow-xl text-[#3e6576]"
-                  style="font-size:11px;">Re-Design</span>
-          </div>
+      <div class="gal-card">
+        <div class="gal-frame">
+          <img class="gal-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPdCeguYQnaPVMEU_e-Rbn4HgDq5zRSjFpU8kuIwpcH-3i4VMAGJb843gN6MZSoB2j4_9dT9fSX9K35aoAFb-eWGNP-M1m8YzHr75rUnqVbhDdBry3S7uuRqH1vZPWMYTKmsp00uvruqisx_8ZVrKej-e-hooyos4-CQ8AM0zt46IgmsQuE9uGMtJKLmWDLvxxdm4jAJn5O7t4Tw3S83NkwNmzR7sFljEr3ey-KQI8SKSYoQYSgL8o944bbBWrcZwys9o-2dovZrbz" alt="The Nebula Drop" onerror="this.closest('.gal-frame').classList.add('img-missing');this.remove()">
+          <div class="gal-overlay"><span class="gal-chip">Re-Design</span></div>
         </div>
-        <p style="font-family:'Playfair Display',serif;font-size:22px;font-weight:500;font-style:italic;color:#1b1c1c;line-height:1.4;margin-bottom:4px;">The Nebula Drop</p>
-        <p class="label text-[#41484b] opacity-55" style="font-size:11px;">@aurelius_design</p>
+        <p class="gal-title">The Nebula Drop</p>
+        <p class="gal-handle">@aurelius_design</p>
       </div>
 
-      <div class="gal-card group cursor-pointer lg:translate-y-12">
-        <div class="aspect-[3/4] rounded-2xl overflow-hidden mb-6 relative"
-             style="box-shadow:0 20px 40px rgba(0,0,0,0.06);">
-          <img class="gal-img w-full h-full object-cover"
-               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkfMxKOZaQ4UHEJmokPcSPmkC9SR5zFDaZwyfLyAAKr0JpPQN8cqagOfacnRNKaZGA4tQCBqsBYal-0LIraFsj-FnelcxyfhU_rBtIe4dRuiIyCtWV6Al4STrQNMR-m9TEjpP0nVXuUyCMzsgYjbzB63YftHtSVLbE59UNUadgpMeYvGLgCQsCyyMPPBfPebdaWRHES857uRmICpM5JokugsDm2P2yrXO_0iCTsR9gQBGVtpslY9kntswCkDItd4BZc4XGa8bSRPXq"
-               alt="Minimalist Solitaire"
-               onerror="this.closest('.aspect-\\[3\\/4\\]').style.background='linear-gradient(135deg,#e9e8e7,#a4cddf)'"/>
-          <div class="gal-overlay absolute inset-0 flex items-center justify-center"
-               style="background:rgba(185,226,245,0.4);">
-            <span class="bg-white px-8 py-3 rounded-lg label shadow-xl text-[#3e6576]" style="font-size:11px;">Re-Design</span>
-          </div>
+      <div class="gal-card gal-card-low">
+        <div class="gal-frame">
+          <img class="gal-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkfMxKOZaQ4UHEJmokPcSPmkC9SR5zFDaZwyfLyAAKr0JpPQN8cqagOfacnRNKaZGA4tQCBqsBYal-0LIraFsj-FnelcxyfhU_rBtIe4dRuiIyCtWV6Al4STrQNMR-m9TEjpP0nVXuUyCMzsgYjbzB63YftHtSVLbE59UNUadgpMeYvGLgCQsCyyMPPBfPebdaWRHES857uRmICpM5JokugsDm2P2yrXO_0iCTsR9gQBGVtpslY9kntswCkDItd4BZc4XGa8bSRPXq" alt="Minimalist Solitaire" onerror="this.closest('.gal-frame').classList.add('img-missing');this.remove()">
+          <div class="gal-overlay"><span class="gal-chip">Re-Design</span></div>
         </div>
-        <p style="font-family:'Playfair Display',serif;font-size:22px;font-weight:500;font-style:italic;color:#1b1c1c;line-height:1.4;margin-bottom:4px;">Minimalist Solitaire</p>
-        <p class="label text-[#41484b] opacity-55" style="font-size:11px;">@ethereal_jewels</p>
+        <p class="gal-title">Minimalist Solitaire</p>
+        <p class="gal-handle">@ethereal_jewels</p>
       </div>
 
-      <div class="gal-card group cursor-pointer">
-        <div class="aspect-[3/4] rounded-2xl overflow-hidden mb-6 relative"
-             style="box-shadow:0 20px 40px rgba(0,0,0,0.06);">
-          <img class="gal-img w-full h-full object-cover"
-               src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJc2KaCp_4cJsArdX6AzqVR9YMSKuOPjmxE4aLw_8S-zz6ZnsYSd8BDonY5SHpzyc7gaFWQxRiXUbR7ZpbdzwGP9AWo3eUPhKmz4l6idgziCEk68nJzQ-eCZJItWUrPu-ETHJckpJ3wIVzeG-5779eF2GPsyPrvlW4ESBxIcZDTMv6z5HLTStZdl8FILBU3mg1bsm56vfy7L4dQ8BvjDmEmnR2L8fZwSclQH2Qbgv_X3CsYCOSOc_K84k3Xy05cZSL9LoC4JbG8xLZ"
-               alt="Architectural Cuff"
-               onerror="this.closest('.aspect-\\[3\\/4\\]').style.background='linear-gradient(135deg,#dbdad9,#8fb8cc)'"/>
-          <div class="gal-overlay absolute inset-0 flex items-center justify-center"
-               style="background:rgba(185,226,245,0.4);">
-            <span class="bg-white px-8 py-3 rounded-lg label shadow-xl text-[#3e6576]" style="font-size:11px;">Re-Design</span>
-          </div>
+      <div class="gal-card">
+        <div class="gal-frame">
+          <img class="gal-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJc2KaCp_4cJsArdX6AzqVR9YMSKuOPjmxE4aLw_8S-zz6ZnsYSd8BDonY5SHpzyc7gaFWQxRiXUbR7ZpbdzwGP9AWo3eUPhKmz4l6idgziCEk68nJzQ-eCZJItWUrPu-ETHJckpJ3wIVzeG-5779eF2GPsyPrvlW4ESBxIcZDTMv6z5HLTStZdl8FILBU3mg1bsm56vfy7L4dQ8BvjDmEmnR2L8fZwSclQH2Qbgv_X3CsYCOSOc_K84k3Xy05cZSL9LoC4JbG8xLZ" alt="Architectural Cuff" onerror="this.closest('.gal-frame').classList.add('img-missing');this.remove()">
+          <div class="gal-overlay"><span class="gal-chip">Re-Design</span></div>
         </div>
-        <p style="font-family:'Playfair Display',serif;font-size:22px;font-weight:500;font-style:italic;color:#1b1c1c;line-height:1.4;margin-bottom:4px;">Architectural Cuff</p>
-        <p class="label text-[#41484b] opacity-55" style="font-size:11px;">@future_heirloom</p>
+        <p class="gal-title">Architectural Cuff</p>
+        <p class="gal-handle">@future_heirloom</p>
       </div>
 
-      <div class="gal-card group cursor-pointer lg:translate-y-12">
-        <div class="aspect-[3/4] rounded-2xl overflow-hidden mb-6 relative"
-             style="box-shadow:0 20px 40px rgba(0,0,0,0.06);">
-          <img class="gal-img w-full h-full object-cover"
-               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfcGSH3FyoF4cE8ImRPjEqTXdHYXcQvIzV5Y5HGdYgTzB2khXA2rgHWl3Q-fuWBOBX_1szuD-JzU0nC7hzgU0Jwa9t2oU9w2oldDQVONUYK482VYezu9bhMiWTc8edNLaQllny-Ra8dDPWkhmp6Mq58wCqMOUMzZH5ANfkb93K5pSPAL7ngDSHzEZt-X8TfxjydUl_kriRiHBqjI3jIoeCE9fdFHk0x5UAk06XtyAcQlCFluFn9aBvbOrSghuqJkHpDaS30ACM6s13"
-               alt="Chronos Edition"
-               onerror="this.closest('.aspect-\\[3\\/4\\]').style.background='linear-gradient(135deg,#e3e2e2,#6b9db5)'"/>
-          <div class="gal-overlay absolute inset-0 flex items-center justify-center"
-               style="background:rgba(185,226,245,0.4);">
-            <span class="bg-white px-8 py-3 rounded-lg label shadow-xl text-[#3e6576]" style="font-size:11px;">Re-Design</span>
-          </div>
+      <div class="gal-card gal-card-low">
+        <div class="gal-frame">
+          <img class="gal-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfcGSH3FyoF4cE8ImRPjEqTXdHYXcQvIzV5Y5HGdYgTzB2khXA2rgHWl3Q-fuWBOBX_1szuD-JzU0nC7hzgU0Jwa9t2oU9w2oldDQVONUYK482VYezu9bhMiWTc8edNLaQllny-Ra8dDPWkhmp6Mq58wCqMOUMzZH5ANfkb93K5pSPAL7ngDSHzEZt-X8TfxjydUl_kriRiHBqjI3jIoeCE9fdFHk0x5UAk06XtyAcQlCFluFn9aBvbOrSghuqJkHpDaS30ACM6s13" alt="Chronos Edition" onerror="this.closest('.gal-frame').classList.add('img-missing');this.remove()">
+          <div class="gal-overlay"><span class="gal-chip">Re-Design</span></div>
         </div>
-        <p style="font-family:'Playfair Display',serif;font-size:22px;font-weight:500;font-style:italic;color:#1b1c1c;line-height:1.4;margin-bottom:4px;">Chronos Edition</p>
-        <p class="label text-[#41484b] opacity-55" style="font-size:11px;">@titan_design</p>
+        <p class="gal-title">Chronos Edition</p>
+        <p class="gal-handle">@titan_design</p>
       </div>
 
     </div>
   </div>
 </section>
 
+<div class="hairline-divider" aria-hidden="true"><span></span></div>
 
 <!-- ════════════════════════════
-     PRICING PREVIEW
+     YOUR JOURNEY — PINNED STEPS
 ════════════════════════════ -->
-<section class="py-32" id="pricing" style="background-image:url('yourjourney.png');background-size:cover;background-position:center;background-repeat:no-repeat;position:relative;">
-  <div class="absolute inset-0" style="background:rgba(10,24,32,0.60);"></div>
-  <div class="max-w-[1600px] mx-auto px-4 md:px-16" style="position:relative;z-index:1;">
+<section class="section-photo" id="journey" style="background-image:url('yourjourney.png');">
+  <div class="section-photo-shade" aria-hidden="true"></div>
+  <div class="shell journey-shell">
 
-    <div class="text-center mb-20">
-      <span class="eyebrow" style="color:rgba(185,226,245,0.82);">Our Capabilities</span>
-      <h2 class="h-section mb-6" style="color:#ffffff;">Your Journey</h2>
-    </div>
-
-    <!-- Flow steps -->
-    <div class="flex flex-col md:flex-row items-center justify-center gap-0 mb-24 max-w-[900px] mx-auto">
-      <div class="flex flex-col items-center text-center flex-1 px-4">
-        <div class="flex items-center justify-center rounded-full mb-4" style="width:48px;height:48px;background:rgba(185,226,245,0.15);">
-          <span class="material-symbols-outlined" style="color:#b9e2f5;font-size:24px;">auto_awesome</span>
-        </div>
-        <p class="label" style="font-size:10px;letter-spacing:0.18em;color:rgba(185,226,245,0.7);">STEP 1</p>
-        <p style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#ffffff;margin-top:4px;">Design</p>
-        <p class="body-copy mt-2" style="font-size:13px;color:rgba(255,255,255,0.65);">Describe your piece to our AI</p>
-      </div>
-      <div class="hidden md:block h-px w-12 flex-shrink-0 mx-2" style="background:rgba(185,226,245,0.3);"></div>
-      <div class="flex flex-col items-center text-center flex-1 px-4">
-        <div class="flex items-center justify-center rounded-full mb-4" style="width:48px;height:48px;background:rgba(185,226,245,0.15);">
-          <span class="material-symbols-outlined" style="color:#b9e2f5;font-size:24px;">refresh</span>
-        </div>
-        <p class="label" style="font-size:10px;letter-spacing:0.18em;color:rgba(185,226,245,0.7);">STEP 2</p>
-        <p style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#ffffff;margin-top:4px;">Refine</p>
-        <p class="body-copy mt-2" style="font-size:13px;color:rgba(255,255,255,0.65);">Tweak until it's exactly right</p>
-      </div>
-      <div class="hidden md:block h-px w-12 flex-shrink-0 mx-2" style="background:rgba(185,226,245,0.3);"></div>
-      <div class="flex flex-col items-center text-center flex-1 px-4">
-        <div class="flex items-center justify-center rounded-full mb-4" style="width:48px;height:48px;background:rgba(185,226,245,0.15);">
-          <span class="material-symbols-outlined" style="color:#b9e2f5;font-size:24px;">videocam</span>
-        </div>
-        <p class="label" style="font-size:10px;letter-spacing:0.18em;color:rgba(185,226,245,0.7);">STEP 3</p>
-        <p style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#ffffff;margin-top:4px;">Try On</p>
-        <p class="body-copy mt-2" style="font-size:13px;color:rgba(255,255,255,0.65);">See it on you via live camera</p>
-      </div>
-      <div class="hidden md:block h-px w-12 flex-shrink-0 mx-2" style="background:rgba(185,226,245,0.3);"></div>
-      <div class="flex flex-col items-center text-center flex-1 px-4">
-        <div class="flex items-center justify-center rounded-full mb-4" style="width:48px;height:48px;background:rgba(185,226,245,0.15);">
-          <span class="material-symbols-outlined" style="color:#b9e2f5;font-size:24px;">receipt_long</span>
-        </div>
-        <p class="label" style="font-size:10px;letter-spacing:0.18em;color:rgba(185,226,245,0.7);">STEP 4</p>
-        <p style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#ffffff;margin-top:4px;">Get Quoted</p>
-        <p class="body-copy mt-2" style="font-size:13px;color:rgba(255,255,255,0.65);">Instant itemised estimate</p>
-      </div>
-      <div class="hidden md:block h-px w-12 flex-shrink-0 mx-2" style="background:rgba(185,226,245,0.3);"></div>
-      <div class="flex flex-col items-center text-center flex-1 px-4">
-        <div class="flex items-center justify-center rounded-full mb-4" style="width:48px;height:48px;background:rgba(185,226,245,0.15);">
-          <span class="material-symbols-outlined" style="color:#b9e2f5;font-size:24px;">shopping_bag</span>
-        </div>
-        <p class="label" style="font-size:10px;letter-spacing:0.18em;color:rgba(185,226,245,0.7);">STEP 5</p>
-        <p style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#ffffff;margin-top:4px;">Order</p>
-        <p class="body-copy mt-2" style="font-size:13px;color:rgba(255,255,255,0.65);">Commission it with one click</p>
+    <div class="section-head section-head-center">
+      <div class="section-head-copy">
+        <span class="eyebrow">Our Capabilities</span>
+        <h2 class="h-section">Your Journey</h2>
       </div>
     </div>
 
-    <!-- Includes strip -->
-    <div class="rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-10 justify-between"
-         style="background:rgba(255,255,255,0.08);border:1px solid rgba(185,226,245,0.25);backdrop-filter:blur(8px);">
-      <div>
-        <p class="label mb-2" style="font-size:10px;letter-spacing:0.18em;color:rgba(185,226,245,0.8);">EVERY ORDER INCLUDES</p>
-        <div class="flex flex-wrap gap-x-10 gap-y-3 mt-4">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined" style="color:#b9e2f5;font-size:18px;">verified</span>
-            <span class="body-copy" style="font-size:13px;color:rgba(255,255,255,0.85);">GIA Certified Stones</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined" style="color:#b9e2f5;font-size:18px;">image</span>
-            <span class="body-copy" style="font-size:13px;color:rgba(255,255,255,0.85);">Archival AI Render</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined" style="color:#b9e2f5;font-size:18px;">local_shipping</span>
-            <span class="body-copy" style="font-size:13px;color:rgba(255,255,255,0.85);">White-Glove Delivery</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined" style="color:#b9e2f5;font-size:18px;">schedule</span>
-            <span class="body-copy" style="font-size:13px;color:rgba(255,255,255,0.85);">4–6 Week Crafting</span>
-          </div>
+    <div class="j-steps">
+
+      <div class="j-step">
+        <div class="j-ico"><span class="j-ring" aria-hidden="true"></span><span class="material-symbols-outlined">auto_awesome</span></div>
+        <div class="j-copy">
+          <p class="j-eyebrow">STEP 1</p>
+          <p class="j-title">Design</p>
+          <p class="j-desc">Describe your piece to our AI</p>
         </div>
       </div>
-      <a href="ailab.html" class="flex-shrink-0">
-        <button class="btn-primary btn-glow" style="font-size:13px;letter-spacing:0.22em;padding:18px 40px;">
-          Design Your Piece
-        </button>
-      </a>
-    </div>
+      <div class="j-link" aria-hidden="true"><span class="j-fill"></span></div>
 
+      <div class="j-step">
+        <div class="j-ico"><span class="j-ring" aria-hidden="true"></span><span class="material-symbols-outlined">refresh</span></div>
+        <div class="j-copy">
+          <p class="j-eyebrow">STEP 2</p>
+          <p class="j-title">Refine</p>
+          <p class="j-desc">Tweak until it's exactly right</p>
+        </div>
+      </div>
+      <div class="j-link" aria-hidden="true"><span class="j-fill"></span></div>
+
+      <div class="j-step">
+        <div class="j-ico"><span class="j-ring" aria-hidden="true"></span><span class="material-symbols-outlined">videocam</span></div>
+        <div class="j-copy">
+          <p class="j-eyebrow">STEP 3</p>
+          <p class="j-title">Try On</p>
+          <p class="j-desc">See it on you via live camera</p>
+        </div>
+      </div>
+      <div class="j-link" aria-hidden="true"><span class="j-fill"></span></div>
+
+      <div class="j-step">
+        <div class="j-ico"><span class="j-ring" aria-hidden="true"></span><span class="material-symbols-outlined">receipt_long</span></div>
+        <div class="j-copy">
+          <p class="j-eyebrow">STEP 4</p>
+          <p class="j-title">Get Quoted</p>
+          <p class="j-desc">Instant itemised estimate</p>
+        </div>
+      </div>
+      <div class="j-link" aria-hidden="true"><span class="j-fill"></span></div>
+
+      <div class="j-step">
+        <div class="j-ico"><span class="j-ring" aria-hidden="true"></span><span class="material-symbols-outlined">shopping_bag</span></div>
+        <div class="j-copy">
+          <p class="j-eyebrow">STEP 5</p>
+          <p class="j-title">Order</p>
+          <p class="j-desc">Commission it with one click</p>
+        </div>
+      </div>
+
+    </div>
   </div>
 </section>
 
+<!-- ════════════════════════════
+     EVERY ORDER INCLUDES
+════════════════════════════ -->
+<section class="section" id="includes">
+  <div class="shell" data-rvg>
+    <div class="includes-strip rv">
+      <div>
+        <p class="includes-label">EVERY ORDER INCLUDES</p>
+        <div class="includes-items">
+          <div class="includes-item"><span class="material-symbols-outlined" aria-hidden="true">verified</span><span>GIA Certified Stones</span></div>
+          <div class="includes-item"><span class="material-symbols-outlined" aria-hidden="true">image</span><span>Archival AI Render</span></div>
+          <div class="includes-item"><span class="material-symbols-outlined" aria-hidden="true">local_shipping</span><span>White-Glove Delivery</span></div>
+          <div class="includes-item"><span class="material-symbols-outlined" aria-hidden="true">schedule</span><span>4–6 Week Crafting</span></div>
+        </div>
+      </div>
+      <span class="magnet"><a href="ailab.html" class="btn-lux">Design Your Piece</a></span>
+    </div>
+  </div>
+</section>
+
+<div class="hairline-divider" aria-hidden="true"><span></span></div>
 
 <!-- ════════════════════════════
      FOUNDING MEMBERS
 ════════════════════════════ -->
-<section class="py-32 bg-[#fbf9f9]">
-  <div class="max-w-[1600px] mx-auto px-4 md:px-16">
-
-    <div class="founding-reveal max-w-2xl mx-auto text-center">
-      <span class="eyebrow">EARLY ACCESS</span>
-      <h2 class="h-section mb-6">Be Among the First</h2>
-      <p class="body-copy mb-10" style="font-size:18px;">
-        JWLZIFY is just opening its doors. Design your piece now and be among the first to wear jewelry made only for you. Founding members help shape what we build next.
-      </p>
-      <a href="ailab.html">
-        <button class="btn-primary btn-glow" style="font-size:13px;letter-spacing:0.22em;padding:18px 40px;">
-          Start Your Design
-        </button>
-      </a>
+<section class="section" id="founding">
+  <div class="shell" data-rvg>
+    <div class="founding-reveal">
+      <span class="eyebrow rv">EARLY ACCESS</span>
+      <h2 class="h-section rv">Be Among the First</h2>
+      <p class="body-lg rv">JWLZIFY is just opening its doors. Design your piece now and be among the first to wear jewelry made only for you. Founding members help shape what we build next.</p>
+      <span class="magnet rv"><a href="ailab.html" class="btn-lux">Start Your Design</a></span>
     </div>
-
   </div>
 </section>
 
@@ -624,206 +413,71 @@ header.nav-visible #navGenerateBtn {
 <!-- ════════════════════════════
      FOOTER
 ════════════════════════════ -->
-<footer class="w-full py-24 bg-white border-t border-[#c1c7cb]/12">
-  <div class="max-w-[1600px] mx-auto px-4 md:px-16">
-    <div class="grid grid-cols-12 gap-16 mb-20">
-      <div class="col-span-12 lg:col-span-4 flex flex-col gap-8">
-        <span style="font-family:'Playfair Display',serif;font-size:24px;font-weight:600;letter-spacing:0.32em;color:#3c6474;text-transform:uppercase;">JWLZIFY</span>
-        <p class="body-copy" style="max-width:280px;color:rgba(65,72,75,0.72);">Fine jewelry, reimagined. We blend AI design with ethical craftsmanship to create pieces made just for you.</p>
-        <div class="flex gap-4">
-          <div class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#3c6474] hover:text-white transition-all" style="background:#efeded;border:1px solid rgba(193,199,203,0.3);"><span class="material-symbols-outlined" style="font-size:18px;">share</span></div>
-          <div class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#3c6474] hover:text-white transition-all" style="background:#efeded;border:1px solid rgba(193,199,203,0.3);"><span class="material-symbols-outlined" style="font-size:18px;">public</span></div>
-          <div class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#3c6474] hover:text-white transition-all" style="background:#efeded;border:1px solid rgba(193,199,203,0.3);"><span class="material-symbols-outlined" style="font-size:18px;">mail</span></div>
+<footer>
+  <div class="shell">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <span class="foot-logo">JWLZIFY</span>
+        <p class="body-copy">Fine jewelry, reimagined. We blend AI design with ethical craftsmanship to create pieces made just for you.</p>
+        <div class="foot-social">
+          <div class="soc-dot" role="presentation"><span class="material-symbols-outlined">share</span></div>
+          <div class="soc-dot" role="presentation"><span class="material-symbols-outlined">public</span></div>
+          <div class="soc-dot" role="presentation"><span class="material-symbols-outlined">mail</span></div>
         </div>
       </div>
-      <div class="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-        <div class="flex flex-col gap-6">
-          <p class="label" style="font-size:12px;letter-spacing:0.13em;color:#1b1c1c;font-weight:700;">Experience</p>
-          <ul class="flex flex-col gap-3">
-            <li><a href="ailab.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">The Lab</a></li>
-            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Expert Jewelers</a></li>
-            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Your Journey</a></li>
-            <li><a href="collections.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Collections</a></li>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <p class="foot-head">Experience</p>
+          <ul>
+            <li><a href="ailab.html">The Lab</a></li>
+            <li><a href="about.html">Expert Jewelers</a></li>
+            <li><a href="about.html">Your Journey</a></li>
+            <li><a href="collections.html">Collections</a></li>
           </ul>
         </div>
-        <div class="flex flex-col gap-6">
-          <p class="label" style="font-size:12px;letter-spacing:0.13em;color:#1b1c1c;font-weight:700;">Philosophy</p>
-          <ul class="flex flex-col gap-3">
-            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Ethical Sourcing</a></li>
-            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Sustainability</a></li>
-            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Our Story</a></li>
+        <div class="foot-col">
+          <p class="foot-head">Philosophy</p>
+          <ul>
+            <li><a href="about.html">Ethical Sourcing</a></li>
+            <li><a href="about.html">Sustainability</a></li>
+            <li><a href="about.html">Our Story</a></li>
           </ul>
         </div>
-        <div class="flex flex-col gap-6">
-          <p class="label" style="font-size:12px;letter-spacing:0.13em;color:#1b1c1c;font-weight:700;">Support</p>
-          <ul class="flex flex-col gap-3">
-            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Account</a></li>
-            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Order Status</a></li>
-            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Shipping &amp; Delivery</a></li>
-            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Returns &amp; Exchanges</a></li>
-            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Warranty</a></li>
-            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Authenticity</a></li>
-            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Size Guide</a></li>
+        <div class="foot-col">
+          <p class="foot-head">Support</p>
+          <ul>
+            <li><a href="support.html">Account</a></li>
+            <li><a href="support.html">Order Status</a></li>
+            <li><a href="support.html">Shipping &amp; Delivery</a></li>
+            <li><a href="support.html">Returns &amp; Exchanges</a></li>
+            <li><a href="support.html">Warranty</a></li>
+            <li><a href="support.html">Authenticity</a></li>
+            <li><a href="support.html">Size Guide</a></li>
           </ul>
         </div>
-        <div class="flex flex-col gap-6">
-          <p class="label" style="font-size:12px;letter-spacing:0.13em;color:#1b1c1c;font-weight:700;">Legal</p>
-          <ul class="flex flex-col gap-3">
-            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Privacy Policy</a></li>
-            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Terms &amp; Conditions</a></li>
-            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Returns &amp; Exchanges</a></li>
-            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Shipping Policy</a></li>
-            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Warranty</a></li>
-            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Cookies Policy</a></li>
+        <div class="foot-col">
+          <p class="foot-head">Legal</p>
+          <ul>
+            <li><a href="legal.html">Privacy Policy</a></li>
+            <li><a href="legal.html">Terms &amp; Conditions</a></li>
+            <li><a href="legal.html">Returns &amp; Exchanges</a></li>
+            <li><a href="legal.html">Shipping Policy</a></li>
+            <li><a href="legal.html">Warranty</a></li>
+            <li><a href="legal.html">Cookies Policy</a></li>
           </ul>
         </div>
       </div>
     </div>
-    <div class="pt-10 flex flex-col sm:flex-row justify-between items-center gap-4"
-         style="border-top:0.5px solid rgba(193,199,203,0.3);">
-      <p class="label" style="font-size:11px;letter-spacing:0.13em;color:rgba(65,72,75,0.5);">© 2026 JWLZIFY Holdings. All Rights Reserved.</p>
-      <p class="label" style="font-size:11px;letter-spacing:0.13em;color:rgba(65,72,75,0.5);">Crafted with Precision by Family-Run Partners</p>
+    <div class="foot-base">
+      <p>© 2026 JWLZIFY Holdings. All Rights Reserved.</p>
+      <p>Crafted with Precision by Family-Run Partners</p>
     </div>
   </div>
 </footer>
 
-<!-- Ice crystal particle system -->
-<script>
-(function(){
-  const canvas=document.getElementById('crystalCanvas');
-  if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  const hero=document.getElementById('hero');
-  function resize(){canvas.width=hero.offsetWidth;canvas.height=hero.offsetHeight;}
-  resize();
-  window.addEventListener('resize',resize);
-  function drawCrystal(x,y,r,angle,alpha){
-    ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.globalAlpha=alpha;
-    ctx.strokeStyle='rgba(255,255,255,0.88)';ctx.lineWidth=0.85;ctx.lineCap='round';
-    for(let i=0;i<6;i++){
-      ctx.save();ctx.rotate(Math.PI/3*i);
-      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-r);
-      ctx.moveTo(0,-r*0.55);ctx.lineTo(r*0.28,-r*0.75);
-      ctx.moveTo(0,-r*0.55);ctx.lineTo(-r*0.28,-r*0.75);
-      ctx.stroke();ctx.restore();
-    }
-    ctx.beginPath();ctx.arc(0,0,r*0.08,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,0.8)';ctx.fill();ctx.restore();
-  }
-  function spawn(){
-    const maxAge=260+Math.random()*320;
-    return{x:Math.random()*canvas.width,y:canvas.height*(0.15+Math.random()*0.65),
-           r:4+Math.random()*9,vy:-(0.18+Math.random()*0.45),vx:(Math.random()-0.5)*0.28,
-           ang:Math.random()*Math.PI*2,spin:(Math.random()-0.5)*0.012,
-           maxA:0.4+Math.random()*0.45,age:0,maxAge};
-  }
-  let pts=[];
-  for(let i=0;i<28;i++){const p=spawn();p.age=Math.random()*p.maxAge;pts.push(p);}
-  function frame(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(pts.length<35&&Math.random()<0.025)pts.push(spawn());
-    pts=pts.filter(p=>p.age<p.maxAge);
-    for(const p of pts){
-      p.age++;p.x+=p.vx;p.y+=p.vy;p.ang+=p.spin;
-      const t=p.age/p.maxAge;
-      const a=t<0.14?p.maxA*(t/0.14):t>0.78?p.maxA*((1-t)/0.22):p.maxA;
-      drawCrystal(p.x,p.y,p.r,p.ang,a);
-    }
-    requestAnimationFrame(frame);
-  }
-  frame();
-})();
-</script>
-
-<script>
-  const navEl = document.getElementById('siteHeader');
-
-  function pastFold() {
-    return window.scrollY >= window.innerHeight * 0.85;
-  }
-
-  window.addEventListener('scroll', () => {
-    if (pastFold()) {
-      navEl.classList.add('nav-visible');
-    } else if (!navEl.matches(':hover')) {
-      navEl.classList.remove('nav-visible');
-    }
-  });
-
-  navEl.addEventListener('mouseenter', () => navEl.classList.add('nav-visible'));
-  navEl.addEventListener('mouseleave', () => {
-    if (!pastFold()) navEl.classList.remove('nav-visible');
-  });
-</script>
 <script type="module" src="firebase-auth.js"></script>
 <script type="module" src="firestore-service.js"></script>
-
-<script>
-(function () {
-  // ── Lenis smooth scroll ──────────────────────────────────
-  const lenis = new Lenis({ lerp: 0.08, duration: 1.4 });
-  gsap.ticker.add((time) => { lenis.raf(time * 1000); });
-  gsap.ticker.lagSmoothing(0);
-  gsap.registerPlugin(ScrollTrigger);
-  lenis.on('scroll', ScrollTrigger.update);
-
-  // ── Hero: entrance on load (already in viewport) ─────────
-  gsap.timeline({ defaults: { ease: 'power3.out', duration: 1.2 } })
-    .from('#hero .hero-h1', { y: 40, opacity: 0 }, 0)
-    .from('#hero .mb-16',   { y: 40, opacity: 0 }, 0.15)
-    .from('#hero a',        { y: 40, opacity: 0 }, 0.30);
-
-  // ── Hero video parallax ──────────────────────────────────
-  gsap.to('#hero video', {
-    y: 80, ease: 'none',
-    scrollTrigger: {
-      trigger: '#hero',
-      start: 'top top',
-      end: 'bottom top',
-      scrub: true
-    }
-  });
-
-  // ── Section headings ─────────────────────────────────────
-  gsap.utils.toArray('.h-section').forEach(function (el) {
-    gsap.from(el, {
-      y: 30, opacity: 0, duration: 1, ease: 'power2.out',
-      scrollTrigger: { trigger: el, start: 'top 85%' }
-    });
-  });
-
-  // ── Feature bento cards ──────────────────────────────────
-  gsap.from('#features .grid > div', {
-    y: 20, opacity: 0, duration: 0.9, ease: 'power2.out', stagger: 0.12,
-    scrollTrigger: { trigger: '#features .grid', start: 'top 85%' }
-  });
-
-  // ── Offer cards ──────────────────────────────────────────
-  gsap.from('.offer-card', {
-    y: 20, opacity: 0, duration: 0.9, ease: 'power2.out', stagger: 0.12,
-    scrollTrigger: { trigger: '#offer', start: 'top 85%' }
-  });
-
-  // ── Gallery cards ────────────────────────────────────────
-  gsap.from('.gal-card', {
-    y: 20, opacity: 0, duration: 0.9, ease: 'power2.out', stagger: 0.12,
-    scrollTrigger: { trigger: '#gallery', start: 'top 85%' }
-  });
-
-  // ── Founding-member CTA ──────────────────────────────────
-  gsap.from('.founding-reveal', {
-    y: 20, opacity: 0, duration: 0.9, ease: 'power2.out',
-    scrollTrigger: { trigger: '.founding-reveal', start: 'top 85%' }
-  });
-
-  // ── Footer ───────────────────────────────────────────────
-  gsap.from('footer', {
-    opacity: 0, duration: 0.8,
-    scrollTrigger: { trigger: 'footer', start: 'top 85%' }
-  });
-})();
-</script>
-
+<script src="home.js"></script>
 <script src="mobile-nav.js"></script>
 </body>
 </html>
