@@ -1,17 +1,15 @@
 /*
  * collections-gallery.js — renders the Collections gallery from
  * window.COLLECTION_ITEMS (collections-data.js). Handles:
- *   - category filtering (sidebar tabs)
- *   - show 6 first, "Explore More" reveals the remaining 12 (and "Show Less")
+ *   - category filtering (sidebar tabs) — every piece in a category renders at once
  *   - lazy images + shimmer + fade-in + branded fallback
- *   - the spec detail modal
+ *   - the spec detail modal + "Customize This Design" handoff to the AI Lab
  */
 (function () {
   'use strict';
 
   var ITEMS = window.COLLECTION_ITEMS || [];
   var grid       = document.getElementById('galleryGrid');
-  var exploreBtn = document.getElementById('exploreMoreBtn');
   var filterBtns = document.getElementById('filterBtns');
   if (!grid || !filterBtns) return;
 
@@ -19,9 +17,7 @@
     'rings': 'ring', 'pendants': 'pendant', 'earrings': 'earring',
     'bracelets': 'bracelet', 'necklace-sets': 'necklace'
   };
-  var INITIAL = 6;
   var currentCategory = 'ring';
-  var expanded = false;
 
   // ── Pricing (shared AI Lab formula via pricing.js) + locked metal options ──
   var P = window.JWLZ_PRICING;
@@ -43,19 +39,25 @@
   function cacheKey(item, metalCode) { return item.id + '|' + metalCode; }
   // Style → chain/structure KEY for the worker's weight model. Names only — the
   // grams-per-cm numbers live in the calc-price worker, never in client code.
+  // Keys mirror what the AI Lab sends for the same piece (_pricingGeomFields): every
+  // bracelet prices as a 'tennis' band and a continuous-line necklace as 'tennis',
+  // other necklaces as their own chain — so the Customize handoff quotes identically.
   var CHAIN_STYLE_KEY = {
-    bracelet: { 'Tennis': 'tennis', 'Line': 'line', 'Link': 'link', 'Wrap': 'wrap', 'Cuff': 'cuff',
-                'Bangle': 'bangle', 'Hinge Cuff': 'cuff', 'Rope': 'rope', 'Bolo': 'bolo', 'Mesh': 'mesh' },
-    necklace: { 'Pendant': 'cable', 'Chain': 'cable', 'Layered': 'layered', 'Collar': 'collar',
-                'Tennis': 'tennis', 'Lariat': 'lariat', 'Station': 'station', 'Rope': 'rope',
-                'Rivière': 'riviere', 'Choker': 'choker' }
+    bracelet: { 'Tennis': 'tennis', 'Cuff': 'tennis', 'Link': 'tennis', 'Bangle': 'tennis',
+                'Station': 'tennis', 'Line': 'tennis' },
+    necklace: { 'Tennis': 'tennis', 'Station': 'station', 'Choker': 'choker', 'Chain': 'cable',
+                'Rivière': 'tennis', 'Rope': 'rope' }
   };
+  // Pendant plate size = the AI Lab's default pendant size (_pendantDims), so the worker
+  // derives pendant grams here exactly as it does for that pendant in the AI Lab.
+  var PENDANT_SIZE_MM = { w: 15, h: 20 };
   function specOf(item, metalCode) {
     var s = item.specs || {};
     var o = { metalCode: metalCode || s.metalCode, stoneCode: s.stoneType,
               jewelryType: s.jewelryType, carats: s.carats, stoneCount: s.stoneCount };
     var map = CHAIN_STYLE_KEY[item.category];
     if (map && map[s.style]) o.chainStyle = map[s.style];
+    if (item.category === 'pendant') { o.pendantWidthMm = PENDANT_SIZE_MM.w; o.pendantHeightMm = PENDANT_SIZE_MM.h; }
     return o;
   }
   // Price item+metal pairs in ONE worker request; fills _priceCache. Resolves when done.
@@ -119,9 +121,9 @@
   }
 
   // ── Build one card ──
-  function makeCard(item, index) {
+  function makeCard(item) {
     var card = document.createElement('div');
-    card.className = 'col-card' + (index >= INITIAL ? ' col-extra' : '');
+    card.className = 'col-card';
     card.setAttribute('data-id', item.id);
     card.setAttribute('data-category', item.category);
 
@@ -156,13 +158,12 @@
     return card;
   }
 
-  // ── Render a category (resets to first 6 + button) ──
+  // ── Render a category (every piece at once) ──
   function render(category) {
     currentCategory = category;
-    expanded = false;
     grid.innerHTML = '';
     var items = ITEMS.filter(function (it) { return it.category === category; });
-    items.forEach(function (it, i) { grid.appendChild(makeCard(it, i)); });
+    items.forEach(function (it) { grid.appendChild(makeCard(it)); });
 
     // ONE batch request for every not-yet-cached price in this category, then fill
     // the card price lines (skipped entirely when the whole category is cached).
@@ -178,31 +179,8 @@
         });
     }
 
-    if (items.length > INITIAL) {
-      exploreBtn.style.display = '';
-      exploreBtn.textContent = 'EXPLORE MORE MASTERPIECES →';
-      exploreBtn.classList.remove('is-expanded');
-    } else {
-      exploreBtn.style.display = 'none';
-    }
-    console.log('[Collections] category selected:', category, '| items shown:', Math.min(INITIAL, items.length));
+    console.log('[Collections] category selected:', category, '| items shown:', items.length);
   }
-
-  // ── Explore more / show less ──
-  function expand() {
-    expanded = true;
-    Array.prototype.forEach.call(grid.querySelectorAll('.col-extra'), function (c) { c.classList.add('show'); });
-    exploreBtn.textContent = 'SHOW LESS ↑';
-    exploreBtn.classList.add('is-expanded');
-    console.log('[Collections] explore more:', currentCategory, '| now showing 18');
-  }
-  function collapse() {
-    expanded = false;
-    Array.prototype.forEach.call(grid.querySelectorAll('.col-extra'), function (c) { c.classList.remove('show'); });
-    exploreBtn.textContent = 'EXPLORE MORE MASTERPIECES →';
-    exploreBtn.classList.remove('is-expanded');
-  }
-  exploreBtn.addEventListener('click', function () { expanded ? collapse() : expand(); });
 
   // ── Scroll to the top of the collections section (accounts for sticky header) ──
   function scrollToCollectionsTop() {
@@ -223,7 +201,7 @@
     if (!btn) return;
     Array.prototype.forEach.call(filterBtns.querySelectorAll('.coll-filter-btn'), function (b) { b.classList.remove('active'); });
     btn.classList.add('active');
-    render(FILTER_TO_CATEGORY[btn.getAttribute('data-filter')]); // resets to first 6 + button
+    render(FILTER_TO_CATEGORY[btn.getAttribute('data-filter')]);
     scrollToCollectionsTop();
     console.log('[Collections] category changed, scrolled to top');
   });
@@ -322,24 +300,35 @@
 
   // "Customize This Design" → hand this piece (with the selected metal) to the AI Lab,
   // which loads it straight into the Refine step. Written synchronously before the <a> navigates.
+  // Carries every pricing input the modal price used, so the AI Lab quote re-prices
+  // the same spec through the same worker.
   if (mCustomize) mCustomize.addEventListener('click', function () {
     if (!_openItem) return;
     var s = _openItem.specs || {};
+    var metal = _openMetal || s.metalCode;
+    var geo = specOf(_openItem, metal);
     var payload = {
       id:         _openItem.id,
+      name:       _openItem.name,
       type:       s.jewelryType,                 // ring | pendant | earrings | bracelet | necklace
-      material:   _openMetal || s.metalCode,     // 925silver | 10ctgold | 14ctgold (AI Lab codes)
+      material:   metal,                         // 925silver | 10ctgold | 14ctgold (AI Lab codes)
       gem:        s.stoneType,                    // lab_diamond | natural_diamond | moissanite_vvsd | none
       style:      s.style,
-      imageUrl:   'images/collections/' + _openItem.id + '.jpg',
-      grams:      s.grams,
+      imageUrl:   new URL('images/collections/' + _openItem.id + '.jpg', window.location.href).href,
+      prompt:     _openItem.desc || _openItem.name,
+      grams:      cachedGrams(_openItem, metal), // worker-derived metalGrams for this metal
+      price:      cachedPrice(_openItem, metal), // the modal price, for the AI Lab's parity log
       carats:     s.carats,
       stoneCount: s.stoneCount,
-      name:       _openItem.name,
-      prompt:     _openItem.desc || _openItem.name
+      centreCt:   s.centreCt,
+      form:       s.form,                        // earrings only: stud | hoop | drop
+      chainStyle: geo.chainStyle,                // bracelet / necklace weight key
+      pendantWidthMm:  geo.pendantWidthMm,       // pendant plate size
+      pendantHeightMm: geo.pendantHeightMm
     };
     try { sessionStorage.setItem('jwlz_customize_piece', JSON.stringify(payload)); } catch (e) {}
-    console.log('[Collections] customize → AI Lab refine:', _openItem.id, '| metal:', payload.material);
+    console.log('[Collections] customize → AI Lab refine:', _openItem.id, '| metal:', payload.material,
+      '| modal price:', payload.price, '| grams:', payload.grams);
   });
 
   // ── Init ──

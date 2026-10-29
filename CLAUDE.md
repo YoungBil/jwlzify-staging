@@ -55,7 +55,7 @@ Google Fonts, Firebase from gstatic CDN, Three.js via CDN importmap.
 |---|---|
 | `ailab.html` | **The app.** ~8,900 lines: all six steps, generation, try-on, pricing, ordering. Everything below is about this file unless stated. |
 | `index.html` | Homepage/marketing. Truth-tightened 2026-07-04 (no fake reviews, no Antwerp/Toronto, no 3D/blockchain claims, gold in "k", © 2026). |
-| `collections.html` + `collections-data.js` + `collections-gallery.js` | Static 90-item gallery (5 categories × 18), deterministic catalogue, prices via `pricing.js`, "Customize This Design" hands off to the AI Lab via sessionStorage. |
+| `collections.html` + `collections-data.js` + `collections-gallery.js` | Static 30-item gallery (5 categories × 6), deterministic catalogue of only what we sell (stone structures sit on the AI Lab spec grids), prices via `pricing.js` → calc-price with the same inputs the AI Lab sends, "Customize This Design" hands off to the AI Lab via sessionStorage. |
 | `pricing.js` | Shared pricing formula for collections. **Manually mirrors** `calculatePrice()` in ailab.html — must be kept in sync by hand (stated in its header). |
 | `firebase-auth.js` | Firebase init (project `jwlzify-193c2`), Google sign-in modal, header auth UI. Exposes `window._jwlApp`, `window._jwlAuth`, `signInWithGoogle()`, `signOut()`. |
 | `firestore-service.js` | `window.JWL.saveDesign/saveOrder/getDesigns/getOrders` → `users/{uid}/designs` and `users/{uid}/orders`. |
@@ -63,7 +63,7 @@ Google Fonts, Firebase from gstatic CDN, Three.js via CDN importmap.
 | `about/support/shipping/returns/warranty/legal/orders/account/authenticity.html` | Static content pages sharing header/footer markup (copy-pasted per page, no shared component). |
 | `*-worker.js` + `*-wrangler.toml` | Cloudflare Worker sources (refreshed 2026-07-05 with origin+rate-limit security; see constraint #2). Deploy = dashboard paste only. (`gemini-image-worker.js` was deleted 2026-07-05 when Gemini was removed from image generation.) |
 | `specs/` | Implementation specs for post-window work (2026-07-05): `stone-compositing.md` (guaranteed exact counts via sprite overlay), `flux-kontext-refine.md` (instruction img2img refine), `stripe-checkout.md` (30% deposit checkout + order status pipeline). Written to be executable by a weaker model without re-discovering the codebase. |
-| `generate-collection-images.js` | One-time Node batch script that generated the 90 gallery images via the hf-image worker (skips existing; not part of the site). |
+| `generate-collection-images.js` | One-time Node batch script that generated the 30 gallery images via the flux-image worker (Flux 2 Pro, `square_hd`, `Origin: https://jwlzify.com`; skips existing; not part of the site). |
 | `test-img2img.js` | Ad-hoc Node smoke test for the hf-image worker (txt2img → img2img). Not part of the site. |
 | `.env` | Local only, gitignored. Never commit. |
 
@@ -161,7 +161,7 @@ https://jwlzify.com` header if ever re-run. Endpoints as they appear in the code
 |---|---|---|
 | `https://flux-image.sarkd333.workers.dev` (`FLUX_WORKER_URL`) | **SOLE** image generator — txt2img + img2img refine via fal.ai `flux-2-pro` / `flux-2-pro/edit`. NO fallback: if it fails, `_generateImage` returns null and the caller shows "Generation temporarily unavailable — please try again". | POST `{prompt, image_size, initImage?, seed?}` → raw image bytes. No negative_prompt / guidance_scale (fal's flux-2-pro doesn't support them, verified 2026-07-12). Edit mode sends fal `image_urls` (LIST) and omits image_size (fal `auto` preserves source framing). Source: `flux-image-worker.js` (`FAL_KEY` secret) — paste-deploy pending. |
 | ~~`https://gemini-image.sarkd333.workers.dev/`~~ | **REMOVED** from image generation (2026-07-05). Gemini is no longer called anywhere in the app; `gemini-image-worker.js` was deleted. The deployed endpoint, if still live, is unused. | — |
-| `https://hf-image.sarkd333.workers.dev/` | **No longer in the live generation chain** (was the tertiary SDXL fallback; removed 2026-07-05). Still used by the offline `generate-collection-images.js` batch script only. Despite the "hf" name it runs **Cloudflare Workers AI** SDXL (`@cf/stabilityai/stable-diffusion-xl-lightning`). | POST `{inputs, negative_prompt, guidance_scale, num_inference_steps, initImage?}` → raw PNG (batch script crops the bottom 40px watermark strip). Needs an `AI` Workers-AI binding. |
+| `https://hf-image.sarkd333.workers.dev/` | **No longer in the live generation chain** (was the tertiary SDXL fallback; removed 2026-07-05). No longer used by `generate-collection-images.js` either (moved to flux-image 2026-10-29). Despite the "hf" name it runs **Cloudflare Workers AI** SDXL (`@cf/stabilityai/stable-diffusion-xl-lightning`). | POST `{inputs, negative_prompt, guidance_scale, num_inference_steps, initImage?}` → raw PNG (batch script crops the bottom 40px watermark strip). Needs an `AI` Workers-AI binding. |
 | `https://fal-bg-remove.sarkd333.workers.dev` (`FAL_BG_REMOVE_URL`) | Background removal via fal `birefnet` (fallback `rembg`) | POST `{image_url: dataURL}` → **JSON `{image:{url}, model}`** (front end fetches that PNG from the fal CDN). Source: `bg-remove-worker.js` (aligned to this contract 2026-07-05; `FAL_KEY` secret). |
 | `https://vision-verify.sarkd333.workers.dev` (`VERIFY_WORKER_URL`) | Generation verification (Groq Llama-4-Scout vision) | POST `{image: dataURL, expected?}` → `{jewelryType, form, stoneCount}`. Source: `vision-verify-worker.js` (`GROQ_API_KEY` secret). Front end fails open if undeployed/down. |
 | `https://groq-enhance.sarkd333.workers.dev` (`ENHANCE_WORKER_URL`) | Prompt enhancement (Groq) | POST `{idea, jewelryType, earringStyle?, earringStyleDescriptor?}` → `{enhanced}`. Source: `groq-enhance-worker.js` (written 2026-07-05 — **diff against dashboard before pasting**; `GROQ_API_KEY` secret). Failure falls back silently to the raw idea. |
@@ -359,8 +359,8 @@ image, defines the order.
   primary) and the HF/SDXL tertiary were removed from the live path, which also drops
   the Gemini-first attempt and its rate-limit stalls (faster generation). If Flux
   fails, the user sees a clean "Generation temporarily unavailable — please try
-  again" and retries — no silent fallback. The 90-image collections batch script
-  still uses the SDXL worker directly (offline, unrelated to the live path).
+  again" and retries — no silent fallback. The 30-image collections batch script
+  calls the same flux-image worker directly (offline, unrelated to the live path).
 - The step-1 "Next: Specifications" flow means generation actually starts from step 2;
   `resolveJewelryType()` lets an unambiguous typed description override the selected
   type chip at generation time.

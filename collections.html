@@ -196,13 +196,6 @@ tailwind.config = {
   margin-top: 6px;
 }
 
-/* ── Explore-more reveal (items 7–18) ── */
-.col-extra { display: none; }
-.col-extra.show { display: block; animation: collFadeSlide 0.45s ease both; }
-@keyframes collFadeSlide {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: none; }
-}
 .coll-img.loaded { opacity: 1; }
 
 /* ── Specs modal ── */
@@ -418,23 +411,23 @@ tailwind.config = {
           <div class="flex flex-col gap-1.5" id="filterBtns">
             <button class="coll-filter-btn active" data-filter="rings">
               <span>Rings</span>
-              <span style="font-weight:400;opacity:0.55;font-size:11px;">124</span>
+              <span style="font-weight:400;opacity:0.55;font-size:11px;">6</span>
             </button>
             <button class="coll-filter-btn" data-filter="pendants">
               <span>Pendants</span>
-              <span style="font-weight:400;opacity:0.55;font-size:11px;">89</span>
+              <span style="font-weight:400;opacity:0.55;font-size:11px;">6</span>
             </button>
             <button class="coll-filter-btn" data-filter="earrings">
               <span>Earrings</span>
-              <span style="font-weight:400;opacity:0.55;font-size:11px;">215</span>
+              <span style="font-weight:400;opacity:0.55;font-size:11px;">6</span>
             </button>
             <button class="coll-filter-btn" data-filter="bracelets">
               <span>Bracelets</span>
-              <span style="font-weight:400;opacity:0.55;font-size:11px;">56</span>
+              <span style="font-weight:400;opacity:0.55;font-size:11px;">6</span>
             </button>
             <button class="coll-filter-btn" data-filter="necklace-sets">
               <span>Necklace Sets</span>
-              <span style="font-weight:400;opacity:0.55;font-size:11px;">4</span>
+              <span style="font-weight:400;opacity:0.55;font-size:11px;">6</span>
             </button>
           </div>
         </div>
@@ -444,13 +437,6 @@ tailwind.config = {
             <!-- ══ GALLERY GRID (rendered by collections-gallery.js) ══ -->
       <div class="flex-1 min-w-0">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="galleryGrid"></div>
-
-        <!-- Explore more / show less -->
-        <div class="text-center mt-16">
-          <button class="btn-outline" id="exploreMoreBtn" style="font-size:12px;letter-spacing:0.22em;padding:18px 52px;display:none;">
-            EXPLORE MORE MASTERPIECES →
-          </button>
-        </div>
       </div>
       <!-- end gallery -->
 

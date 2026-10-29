@@ -3,31 +3,34 @@
  * ------------------------------------------------------------------
  * ONE-TIME generation of the collections.html gallery images.
  *
- * Catalogue: collections-data.js  (5 categories x 18 items = 90).
- * One front-facing image per item -> images/collections/<id>.jpg
- * (e.g. ring-01.jpg ... necklace-18.jpg)
+ * Catalogue: collections-data.js  (5 categories x 6 items = 30).
+ * One image per item -> images/collections/<id>.jpg
+ * (e.g. ring-01.jpg ... necklace-06.jpg)
  *
- * PIPELINE: HuggingFace / SDXL Cloudflare Worker ONLY (direct).
- *   This one-time batch script generates the static collection gallery via the
- *   SDXL worker directly (it is not part of the live app, and never called Gemini).
- *   The LIVE AI Lab (ailab.html) now uses Flux as its SOLE generator; this batch
- *   script is independent of that path and still goes HF-direct for the 90-image batch.
- *     SDXL worker -> https://hf-image.sarkd333.workers.dev/
+ * PIPELINE: the flux-image Cloudflare Worker (fal.ai Flux 2 Pro) — the same
+ * worker + model the live AI Lab uses (FLUX_WORKER_URL in ailab.html).
+ *   Flux worker -> https://flux-image.sarkd333.workers.dev
+ *   Body: { prompt, image_size: 'square_hd' } only — Flux 2 Pro has no
+ *   negative_prompt / guidance_scale. The worker allowlists origins, so every
+ *   request carries  Origin: https://jwlzify.com.
  *   (API keys stay inside the Cloudflare worker — never embedded here.)
  *
- * Prompt structure + orientation rules + negative prompts match the AI Lab:
- *   - single item, front-facing rings, closed single-loop bracelets,
- *     product-only earrings/necklaces (no model), white/studio background,
- *     photorealistic, 8k, guidance_scale 9.0, full HF negative prompts.
+ * Prompt = ONE affirmative paragraph, assembled the way ailab.html does:
+ *   jewelry type + camera angle → metal → stones → one quality clause.
+ *   Head-on rings, a closed single-loop bracelet, product-only flat-lay
+ *   earrings (one earring — the AI Lab try-on mirrors it into the pair) and
+ *   necklaces, all on a seamless white studio background. Colour is always
+ *   explicit: white sterling silver / yellow gold, colourless brilliant white
+ *   stones (same wording as the collections-data.js descriptions).
  *
  * Every output is resized to max 800px wide and re-encoded JPEG quality 80
  * (via Windows System.Drawing) so the page loads fast.
  *
  * Behaviour:
  *   - skips items whose image already exists (re-runs are cheap)
- *   - retries each HF call up to 3 times before giving up
- *   - ~1.5s delay between requests (gentle on Cloudflare Workers AI)
- *   - end-of-run summary: generated / skipped / failed (+ failed ids)
+ *   - retries each worker call up to 3 times before giving up
+ *   - ~1.5s delay between requests (the worker allows 15 req/min per IP)
+ *   - end-of-run summary: generated / skipped / failed (+ failed ids) / worker calls
  *
  * Run:  node generate-collection-images.js
  *       node generate-collection-images.js --only ring          (one category)
@@ -43,131 +46,109 @@ const os   = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
-const ITEMS      = require('./collections-data.js');
-const HF_WORKER  = 'https://hf-image.sarkd333.workers.dev/';
-const OUT_DIR    = path.join(__dirname, 'images', 'collections');
-const MAX_WIDTH  = 800;
-const JPEG_Q     = 80;
+const ITEMS       = require('./collections-data.js');
+const FLUX_WORKER = 'https://flux-image.sarkd333.workers.dev';
+const ORIGIN      = 'https://jwlzify.com';
+const IMAGE_SIZE  = 'square_hd';
+const OUT_DIR     = path.join(__dirname, 'images', 'collections');
+const MAX_WIDTH   = 800;
+const JPEG_Q      = 80;
 const MAX_RETRIES = 3;
-const DELAY_MS   = 1500;
+const DELAY_MS    = 1500;
 
 // ─────────────────────────────────────────────────────────────────
-// Prompt fragments (mirrored from ailab.html)
+// Prompt fragments — colour wording matches the collections-data.js descriptions
 // ─────────────────────────────────────────────────────────────────
-const BASE_TAIL =
-  'isolated fine jewelry product photograph, professional diffuse studio lighting, ' +
-  'no harsh shadows, hyper realistic, 8K ultra high definition, macro lens, sharp focus, ' +
-  'precious metal gleam, gemstone sparkle and brilliance, luxury brand catalog. ' +
-  'No humans. No person. No body parts. No hands. No fingers. No skin. No model. ' +
-  'Product-only photography. The jewelry piece is the sole subject of the image.';
+const METAL_LOOK = {
+  '925silver': 'bright polished white sterling silver',
+  '10ctgold':  'rich yellow 10k gold',
+  '14ctgold':  'rich yellow 14k gold',
+};
+const STONE_NOUN = { lab_diamond: 'lab diamond', moissanite_vvsd: 'moissanite', natural_diamond: 'natural diamond' };
+const STONE_LOOK = 'colourless, brilliant white';
 
-const GENERIC_NEG =
-  'person, human, model, body, face, hands, fingers, neck, skin, text, watermark, logo, ' +
-  'blurry, low quality, distorted, deformed, multiple items, two items, collage, grid, ' +
-  'contact sheet, duplicate';
+const NUM_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+function spell(n) { return NUM_WORDS[n] || String(n); }
+function ct(n) { return (+n.toFixed(2)).toString(); }
+// How one earring of each AI Lab form lies in the frame (try-on overlays it upright).
+const EARRING_FORM_VIEW = {
+  stud: 'the stud seen face-on with its stone facing the camera',
+  hoop: 'the hoop lying as an upright circle with its closure at the top',
+  drop: 'the drop hanging straight down from its ear wire at the top',
+};
 
-const HF_RING_NEGATIVE     = 'tilted, angled, three-quarter view, 3/4 view, perspective, side view, side angle, top-down, birds eye, isometric, diagonal, rotated, lying flat, flat lay, on its side, leaning, oblique, dutch angle, foreshortening, multiple rings, collage, grid, two rings, group of rings, blurry, deformed, asymmetrical';
-const HF_BRACELET_NEGATIVE = 'flat lay, laid flat, spread out, scattered, disconnected pieces, broken chain, straight strip, unclasped, open ends, multiple bracelets, two bracelets, collage, grid, tangled, deformed, asymmetrical, lying on surface, top-down, birds eye, side view, coiled, stacked, double band, two bands, stacked bracelets, pair of bracelets, multiple loops, double loop, twin bands, layered bracelets, second bracelet, duplicate';
-const HF_NECKLACE_NEGATIVE = 'flat lay, tabletop, top-down view, coiled chain, chain laid flat, jewelry box, angled perspective, asymmetrical drape, cropped chain, multiple necklaces, hands, neck skin, mannequin face, busy background, blurry, deformed, multiple chains, two necklaces, double chain, several chains, duplicate necklace, tangled chains';
-const PRODUCT_ONLY_NEG =
-  'model, person, human, woman, man, face, head, ear, ears, neck, shoulder, chest, body, ' +
-  'skin, hair, mannequin head, bust, portrait, ' + GENERIC_NEG;
-
-const BRACELET_SINGLE_BAND =
-  'ONE single bracelet band only. A single continuous loop. One unbroken band. ' +
-  'Exactly one bracelet, not two, not a pair, not stacked, not double-banded.';
-
-function frontClause(type) {
-  switch (type) {
+// Jewelry type + camera angle (one sentence). Head-on ring = the AI Lab's try-on view.
+function subjectClause(item) {
+  const s = item.specs;
+  const style = s.style.toLowerCase();
+  switch (item.type) {
     case 'ring':
-      return 'Single product photograph, single viewpoint. Strict front elevation view, dead-on, ' +
-        'eye-level, zero perspective distortion. The ring stands perfectly upright like the letter O ' +
-        'viewed straight on, the circular band a full vertical circle facing the camera, the centre ' +
-        'stone and setting at the top pointing straight up. Perfectly symmetrical left-to-right, ' +
-        'centred with equal margins. NOT a 3/4 angle, NOT tilted, NOT a side view. ' +
-        'White or very light grey seamless background.';
+      return `Professional product photograph of a single ${style} ring in a strict head-on front view, ` +
+        `viewed perfectly straight on at eye level, the ${s.centreCt > 0 ? 'center stone facing' : 'set stones facing'} ` +
+        `directly toward the viewer in the middle of the frame and the band curving downward symmetrically on the left and right sides.`;
     case 'bracelet':
-      return 'A single closed-loop bracelet shaped as one continuous oval band, photographed floating ' +
-        'upright and facing the camera like a bangle held up to show its circular form. Front-facing ' +
-        'eye-level view, the decorative front face at top-centre fully visible, the band curving away at ' +
-        'the bottom, perfectly symmetrical left-to-right, centred. ' + BRACELET_SINGLE_BAND +
-        ' Pure white seamless background.';
+      return `Professional product photograph of exactly one ${style} bracelet forming a single closed, unbroken loop, ` +
+        `a wrist-sized bracelet about 6 centimetres across with a slender band only a few millimetres wide` +
+        `${s.carats ? ' made of flexible hinged stone settings joined by a small box clasp' : ''}, ` +
+        `standing upright and photographed from the front and slightly above so the whole band reads as one wide ` +
+        `horizontal oval, the front of the band facing the camera, perfectly centered and symmetrical.`;
     case 'pendant':
-      return 'Close-up macro product photograph of a single pendant charm with a bail connector at the top, ' +
-        'pendant centred filling the frame, front-facing, no chain, no cord, the pendant is the only element, ' +
-        'pure white seamless background.';
+      return `Professional close-up product photograph of a single ${style} pendant on its own, photographed in flat lay ` +
+        `from directly above, centered with its bail at the top, slightly taller than it is wide ` +
+        `(approximately 15mm wide by 20mm tall including the bail).`;
+    case 'earrings':
+      return `Professional product photograph of one single ${s.form} earring from a matching pair, shown alone as a ` +
+        `product-only flat-lay photographed from directly above, ${EARRING_FORM_VIEW[s.form]}, centered in the frame.`;
+    case 'necklace':
+      return `Professional product photograph of a single ${style} necklace as a product-only flat-lay, laid flat and ` +
+        `photographed from directly above, the chain arranged in a smooth symmetrical U-shape with both ends at the top ` +
+        `of the frame, the whole necklace visible and centered.`;
     default:
-      return 'Single front-facing product photograph, centred, pure white seamless background.';
+      return `Professional product photograph of a single ${style} ${item.type}, front-facing and centered.`;
   }
 }
 
-// Product-only framing for pieces SDXL likes to put on a model (earrings -> ears,
-// necklaces/chokers -> neck). SDXL obeys the positive prompt better than negatives,
-// so we describe an explicit flat-lay product shot with NO body and NO mannequin.
-function productOnlyClause(type) {
-  if (type === 'earrings') {
-    return 'A matching pair of earrings arranged side by side, lying flat on a seamless pure white surface, ' +
-      'photographed straight from above as a top-down flat-lay product shot. Just the two earrings on white, ' +
-      'nothing else. Absolutely no model, no person, no ear, no head, no face, no skin. ' +
-      'Luxury jewelry catalogue flat-lay photography.';
+// Stones (count stated once). Earrings describe the one rendered earring.
+function stonesClause(item) {
+  const s = item.specs;
+  if (!s.carats) return 'a clean all-metal design with a smooth, highly polished finish';
+  const gem = `${STONE_LOOK} ${STONE_NOUN[s.stoneType]}`;
+  if (item.type === 'earrings') {
+    const per = Math.round(s.stoneCount / 2);
+    const each = ct(s.carats / s.stoneCount);
+    return per === 1 ? `set with a single ${each} carat ${gem} stone`
+      : `set with ${spell(per)} ${gem} stones of ${each} carat each`;
   }
-  // necklace / collar — flat-lay (no bust, no mannequin, no neck)
-  return 'The necklace by itself arranged in an elegant symmetrical loop, laid flat on a seamless pure white ' +
-    'surface, photographed straight from above as a top-down flat-lay product shot. Just the necklace on white, ' +
-    'nothing else. Absolutely no model, no person, no neck, no bust, no mannequin, no head, no skin. ' +
-    'Luxury jewelry catalogue flat-lay photography.';
+  const accents = s.stoneCount - (s.centreCt > 0 ? 1 : 0);
+  if (s.centreCt > 0 && accents === 0) return `set with a single ${ct(s.centreCt)} carat ${gem} center stone`;
+  if (s.centreCt > 0) {
+    return `set with a ${ct(s.centreCt)} carat ${gem} center stone accompanied by ${spell(accents)} smaller ${gem} accent stones`;
+  }
+  return `set with ${spell(s.stoneCount)} matching ${gem} stones of ${ct(s.carats / s.stoneCount)} carat each`;
 }
-
-// Hard product-only constraints appended to EVERY item (positive + negative).
-const NO_BODY_POS = 'isolated jewelry product only, floating on a plain seamless studio background, ' +
-  'absolutely no person, no human, no model, no mannequin, no body parts, no ear, no neck, no chest, ' +
-  'no face, no hand, no wrist, no skin, product-only catalog shot, nothing being worn';
-const NO_BODY_NEG = 'person, human, model, mannequin, face, portrait, ear, neck, chest, shoulder, hand, ' +
-  'fingers, wrist, arm, skin, body part, wearing, worn, hair, lips, eyes';
 
 function buildPrompt(item) {
-  const type = item.type;
-  let orient, neg;
-  if (item.productOnly) {
-    orient = productOnlyClause(type);
-    neg = PRODUCT_ONLY_NEG;
-  } else if (type === 'ring') {
-    orient = frontClause('ring');     neg = HF_RING_NEGATIVE;
-  } else if (type === 'bracelet') {
-    orient = frontClause('bracelet'); neg = HF_BRACELET_NEGATIVE;
-  } else if (type === 'necklace') {
-    orient = frontClause('necklace'); neg = HF_NECKLACE_NEGATIVE;
-  } else {
-    orient = frontClause(type);       neg = GENERIC_NEG;
-  }
-
-  // Hard product-only constraints on EVERY item (no people / body parts).
-  neg = neg + ', ' + NO_BODY_NEG;
-
-  const prompt = `Luxury ${item.desc}. ${orient} ${BASE_TAIL}`;
-  // SDXL likes keyword-stacked, front-loaded prompts.
-  const hfInput = `${item.desc}, front view, straight-on, centered, symmetrical, single item, ` +
-    NO_BODY_POS + ', product photography, white background, studio lighting, sharp focus, ' +
-    'photorealistic, 8k, highly detailed';
-
-  return {
-    inputs: hfInput + ' Avoid: ' + neg,
-    negative_prompt: neg,
-    guidance_scale: 9.0,
-    num_inference_steps: 30,
-  };
+  const piece = item.type === 'earrings' ? 'earring' : item.type;
+  const look = METAL_LOOK[item.specs.metalCode];
+  const oneMetal = item.specs.carats ? `every part including the prongs and settings in the same ${look}, ` : '';
+  return `${subjectClause(item)} Crafted entirely in ${look}, ${oneMetal}${stonesClause(item)}. ` +
+    `The single ${piece} is the sole subject, isolated on a seamless white studio background, soft even studio ` +
+    `lighting, sharp macro focus, photorealistic luxury jewelry product photography.`;
 }
 
 // ─────────────────────────────────────────────────────────────────
-// HF/SDXL call — returns raw image Buffer or throws.
+// Flux worker call — returns raw image Buffer or throws.
 // ─────────────────────────────────────────────────────────────────
-async function callHF(hfBody) {
-  const res = await fetch(HF_WORKER, {
+let workerCalls = 0;
+async function callFlux(prompt) {
+  workerCalls++;
+  const res = await fetch(FLUX_WORKER, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(hfBody),
+    headers: { 'Content-Type': 'application/json', 'Origin': ORIGIN },
+    body: JSON.stringify({ prompt: prompt, image_size: IMAGE_SIZE }),
   });
-  if (!res.ok) throw new Error('HF HTTP ' + res.status);
+  if (!res.ok) throw new Error('Flux HTTP ' + res.status + ' ' + (await res.text()).slice(0, 200));
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.length < 5000) throw new Error('blob too small (' + buf.length + 'b)');
   return buf;
@@ -233,7 +214,7 @@ async function main() {
   let generated = 0, skipped = 0, failed = 0;
   const failedIds = [];
 
-  console.log('SDXL-direct generation of ' + total + ' images -> ' + OUT_DIR + '\n');
+  console.log('Flux generation of ' + total + ' images -> ' + OUT_DIR + '\n');
 
   let n = 0;
   for (const item of items) {
@@ -247,11 +228,12 @@ async function main() {
       continue;
     }
 
-    const hfBody = buildPrompt(item);
+    const prompt = buildPrompt(item);
+    console.log(head + ' prompt: ' + prompt);
     let raw = null, lastErr = '';
     for (let attempt = 1; attempt <= MAX_RETRIES && !raw; attempt++) {
       try {
-        raw = await callHF(hfBody);
+        raw = await callFlux(prompt);
       } catch (e) {
         lastErr = e.message;
         console.log(head + ' ... attempt ' + attempt + '/' + MAX_RETRIES + ' failed (' + lastErr + ')');
@@ -286,8 +268,10 @@ async function main() {
   console.log('Skipped (already existed): ' + skipped);
   console.log('Failed: ' + failed);
   if (failedIds.length) console.log('Failed ids: ' + failedIds.join(', '));
+  console.log('Worker calls this run: ' + workerCalls);
   console.log('Output dir: ' + OUT_DIR);
   process.exit(failed && generated === 0 && skipped === 0 ? 1 : 0);
 }
 
-main().catch((e) => { console.error('Fatal:', e); process.exit(1); });
+if (require.main === module) main().catch((e) => { console.error('Fatal:', e); process.exit(1); });
+module.exports = { buildPrompt };
