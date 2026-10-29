@@ -59,29 +59,19 @@
   })();
 
   // ── Account UI (fed by the site's existing Firebase sign-in) ──
+  // Signed out: "Sign In". Signed in: the user's first name (initial as fallback).
   var _signedIn = false;
   window.__jwlzV2AuthUI = function (user) {
     _signedIn = !!user;
-    var icon = document.getElementById('accountIcon');
-    var label = document.getElementById('accountLabel');
-    var initial = document.getElementById('accountInitial');
-    var btn = document.getElementById('accountBtn');
-    var menuLabel = document.getElementById('menuAccountLabel');
+    var navLink = document.getElementById('signInLink');
+    var menuLink = document.getElementById('menuSignIn');
     var name = user ? (user.displayName || user.email || 'Account') : '';
-    var letter = name ? name.trim().charAt(0).toUpperCase() : '';
-    if (user) {
-      if (icon) icon.style.display = 'none';
-      if (label) label.style.display = 'none';
-      if (initial) { initial.style.display = 'inline-flex'; initial.textContent = letter; }
-      if (btn) btn.title = 'Signed in as ' + name;
-      if (menuLabel) menuLabel.textContent = 'Signed in as ' + name;
-    } else {
-      if (icon) icon.style.display = '';
-      if (label) { label.style.display = ''; label.textContent = 'Sign in'; }
-      if (initial) initial.style.display = 'none';
-      if (btn) btn.title = 'Sign in';
-      if (menuLabel) menuLabel.textContent = 'Sign in';
-    }
+    var first = name ? (name.trim().split(/\s+/)[0] || name.trim().charAt(0).toUpperCase()) : '';
+    [navLink, menuLink].forEach(function (el) {
+      if (!el) return;
+      if (user) { el.textContent = first; el.title = 'Signed in as ' + name; }
+      else { el.textContent = 'Sign In'; el.title = 'Sign In'; }
+    });
   };
   window.__jwlzV2AccountClick = function () {
     if (!_signedIn && typeof window.signInWithGoogle === 'function') window.signInWithGoogle();
