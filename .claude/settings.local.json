@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(Get-Item \"howitworks.png\")",
+      "Bash(Select-Object Name, LastWriteTime, Length)",
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "WebFetch(domain:commons.wikimedia.org)",
+      "Bash(dir test-pendant*)",
+      "Bash(magick --version)",
+      "Bash(convert --version)",
+      "Bash(grep -rn \"YOUR_API_KEY\" *.html *.js)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(curl -s \"https://data.jsdelivr.com/v1/packages/npm/@mediapipe/tasks-vision@0.10.35\" -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Bash(curl -s \"https://data.jsdelivr.com/v1/packages/npm/@mediapipe/tasks-vision@0.10.35\")"
+    ]
+  }
+}

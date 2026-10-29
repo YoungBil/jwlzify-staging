@@ -1,0 +1,572 @@
+﻿<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon_transparent.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Jwlzify</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>
+tailwind.config = {
+  darkMode:"class",
+  theme:{extend:{colors:{
+    "primary":"#3c6474","on-primary":"#ffffff",
+    "primary-container":"#b9e2f5","on-primary-container":"#3e6576",
+    "primary-fixed":"#c0e9fc","primary-fixed-dim":"#a4cddf",
+    "secondary":"#5e5e5b","on-secondary":"#ffffff",
+    "secondary-container":"#e1dfdb","on-secondary-container":"#63635f",
+    "surface":"#fbf9f9","surface-dim":"#dbdad9",
+    "surface-container-lowest":"#ffffff","surface-container-low":"#f5f3f3",
+    "surface-container":"#efeded","surface-container-high":"#e9e8e7",
+    "surface-container-highest":"#e3e2e2",
+    "on-surface":"#1b1c1c","on-surface-variant":"#41484b",
+    "outline":"#71787c","outline-variant":"#c1c7cb",
+    "inverse-surface":"#303031","inverse-primary":"#a4cddf",
+    "background":"#fbf9f9",
+  }}}
+}
+</script>
+<style>
+/* ── Collections hero ── */
+.collections-hero {
+  position: relative;
+}
+.collections-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1;
+}
+.collections-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Gallery card ── */
+.col-card {
+  cursor: pointer;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid rgba(193,199,203,0.18);
+  overflow: hidden;
+  transition: transform 0.32s ease, box-shadow 0.32s ease;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.06);
+}
+.col-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 22px 56px rgba(60,100,116,0.15);
+}
+
+/* ── Carousel arrows ── */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 34px;
+  height: 34px;
+  background: rgba(255,255,255,0.92);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.14);
+  opacity: 0;
+  transition: opacity 0.22s ease, background 0.15s ease;
+  padding: 0;
+}
+.carousel-arrow:hover { background: #fff; }
+.carousel-prev { left: 10px; }
+.carousel-next { right: 10px; }
+.col-card:hover .carousel-arrow { opacity: 1; }
+
+/* ── Filter buttons ── */
+.coll-filter-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5e5e5b;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+}
+.coll-filter-btn:hover:not(.active) {
+  background: rgba(185,226,245,0.14);
+  color: #3c6474;
+  border-color: rgba(60,100,116,0.12);
+}
+.coll-filter-btn.active {
+  background: #3c6474;
+  color: #fff;
+  border-color: transparent;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(60,100,116,0.22);
+}
+
+/* ── Collection card images ── */
+.coll-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #0B0F1A;
+}
+/* Subtle branded fallback shown if an image fails to load */
+.coll-img-fallback {
+  height: 100%;
+  width: 100%;
+  background: #0B0F1A;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.coll-img-fallback .material-symbols-outlined { font-size: 46px; color: #C9A84C; }
+.coll-img-fallback span:last-child {
+  font-family: 'Playfair Display', serif;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: #C9A84C;
+  text-transform: uppercase;
+}
+
+/* ── Card image wrapper + skeleton shimmer + fade-in ── */
+.col-imgwrap {
+  position: relative;
+  height: 290px;
+  overflow: hidden;
+  background: #eef1f3;
+}
+.col-imgwrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(100deg, #e9edf0 25%, #f6f8f9 50%, #e9edf0 75%);
+  background-size: 220% 100%;
+  animation: collShimmer 1.3s ease-in-out infinite;
+}
+.col-imgwrap.img-ready::before { display: none; }
+@keyframes collShimmer {
+  0%   { background-position: 220% 0; }
+  100% { background-position: -120% 0; }
+}
+.coll-img {
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+/* ── Card body / title ── */
+.col-card-body { padding: 18px 20px 22px; }
+.col-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 19px;
+  font-weight: 500;
+  font-style: italic;
+  color: #1b1c1c;
+  line-height: 1.3;
+}
+.col-card-price {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #3c6474;
+  margin-top: 6px;
+}
+
+/* ── Explore-more reveal (items 7–18) ── */
+.col-extra { display: none; }
+.col-extra.show { display: block; animation: collFadeSlide 0.45s ease both; }
+@keyframes collFadeSlide {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+.coll-img.loaded { opacity: 1; }
+
+/* ── Specs modal ── */
+.specs-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(6, 9, 16, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.specs-modal-overlay.open { display: flex; }
+.specs-modal {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #0B0F1A;
+  color: #ECECEC;
+  border: 1px solid rgba(201,168,76,0.30);
+  border-radius: 18px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 720px) { .specs-modal { flex-direction: row; } }
+.specs-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(201,168,76,0.35);
+  background: rgba(11,15,26,0.7);
+  color: #C9A84C;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.specs-modal-close:hover { background: rgba(201,168,76,0.15); transform: rotate(90deg); }
+.specs-modal-img {
+  flex: 0 0 auto;
+  width: 100%;
+  background: #11151f;
+  border-radius: 18px 18px 0 0;
+}
+@media (min-width: 720px) {
+  .specs-modal-img { width: 44%; border-radius: 18px 0 0 18px; }
+}
+.specs-modal-img img { width: 100%; height: 100%; max-height: 340px; object-fit: cover; display: block; border-radius: inherit; }
+@media (min-width: 720px) { .specs-modal-img img { max-height: none; } }
+.specs-modal-body { flex: 1 1 auto; padding: 30px 32px 34px; }
+.specs-modal-eyebrow {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #C9A84C;
+}
+.specs-modal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.12;
+  color: #ffffff;
+  margin: 8px 0 4px;
+}
+.specs-modal-handle {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: rgba(236,236,236,0.55);
+  margin-bottom: 22px;
+}
+.specs-list { list-style: none; margin: 0 0 26px; padding: 0; }
+.specs-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(201,168,76,0.14);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+.specs-list li .k { color: rgba(236,236,236,0.55); letter-spacing: 0.04em; }
+.specs-list li .v { color: #ECECEC; font-weight: 500; text-align: right; }
+.specs-list li .v.price { color: #C9A84C; font-weight: 600; }
+.specs-customize-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #0B0F1A;
+  background: #C9A84C;
+  border: none;
+  border-radius: 10px;
+  padding: 15px 30px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter 0.18s ease, transform 0.18s ease;
+}
+.specs-customize-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* ── Modal metal selector + computed price ── */
+.specs-metal-row { display: flex; align-items: center; gap: 14px; margin: 4px 0 18px; flex-wrap: wrap; }
+.specs-metal-label {
+  font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: rgba(236,236,236,0.55);
+}
+.specs-metal-select { display: flex; gap: 8px; flex-wrap: wrap; }
+.specs-metal-btn {
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  color: #ECECEC; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(201,168,76,0.3); border-radius: 999px;
+  padding: 7px 14px; cursor: pointer; transition: all 0.18s ease;
+}
+.specs-metal-btn:hover { border-color: rgba(201,168,76,0.6); }
+.specs-metal-btn.active { background: #C9A84C; color: #0B0F1A; border-color: #C9A84C; font-weight: 600; }
+.specs-price-label {
+  font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: rgba(236,236,236,0.5); margin-bottom: 2px;
+}
+.specs-price {
+  font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 600;
+  color: #C9A84C; margin-bottom: 22px;
+}
+
+</style>
+</head>
+<body class="text-[#1b1c1c] min-h-screen" style="background-image:url('community%20page%20pic.png');background-size:cover;background-position:center top;background-attachment:fixed;background-repeat:no-repeat;">
+
+<!-- ════════════════════════════
+     NAVIGATION
+════════════════════════════ -->
+<header id="siteHeader" class="sticky top-0 w-full z-50 nav-glass border-b border-[#c1c7cb]/20"
+        style="box-shadow:0 1px 18px rgba(0,0,0,0.04);">
+  <nav class="flex justify-between items-center w-full max-w-[1600px] mx-auto px-4 md:px-16 py-5">
+    <div class="flex items-center gap-10">
+      <a href="index.html" style="font-family:'Playfair Display',serif;font-size:22px;font-weight:600;letter-spacing:0.32em;color:#3c6474;text-transform:uppercase;">JWLZIFY</a>
+      <div class="hidden lg:flex items-center gap-8">
+        <a href="index.html"       class="nav-link">Home</a>
+        <a href="collections.html" class="nav-link nav-active">Collections</a>
+        <a href="ailab.html"       class="nav-link">AI Lab</a>
+        <a href="about.html"       class="nav-link">About Us</a>
+        <a href="support.html"     class="nav-link">Support</a>
+      </div>
+    </div>
+    <div class="flex items-center gap-5">
+      <div class="hidden lg:flex items-center">
+        <button id="signInBtn" onclick="signInWithGoogle()"
+          style="font-family:Inter,sans-serif;font-size:12px;font-weight:500;letter-spacing:0.08em;color:rgba(65,72,75,0.8);background:transparent;border:none;cursor:pointer;padding:6px 0;transition:color 0.2s ease;">Sign In</button>
+        <div id="userMenu" style="display:none;align-items:center;gap:8px;position:relative;cursor:pointer;" onclick="toggleDropdown()">
+          <img id="userAvatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(60,100,116,0.3);" src="" alt="avatar">
+          <span id="userName" style="font-family:Inter;font-size:13px;font-weight:500;color:#1b1c1c;"></span>
+          <div id="userDropdown" style="display:none;position:absolute;top:calc(100% + 12px);right:0;background:white;border:0.5px solid rgba(193,199,203,0.6);border-radius:12px;padding:8px;min-width:160px;box-shadow:0 8px 32px rgba(0,0,0,0.08);z-index:1000;">
+            <button onclick="signOut()" style="width:100%;text-align:left;padding:10px 14px;font-family:Inter;font-size:13px;color:#1b1c1c;background:transparent;border:none;border-radius:8px;cursor:pointer;transition:background 0.15s ease;" onmouseover="this.style.background='#f5f3f3'" onmouseout="this.style.background='transparent'">Sign Out</button>
+          </div>
+        </div>
+      </div>
+      <a href="ailab.html">
+        <button class="label text-white px-7 py-3 rounded-lg active:scale-95 transition-all hover:brightness-110 btn-glow"
+                style="background:#3c6474;font-size:11px;letter-spacing:0.16em;border:none;">GENERATE</button>
+      </a>
+      <button class="lg:hidden text-[#1b1c1c]" aria-label="Menu" style="background:none;border:none;">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+<!-- ════════════════════════════
+     HERO
+════════════════════════════ -->
+<section class="collections-hero py-24 text-center">
+  <div class="collections-hero-content max-w-[1600px] mx-auto px-4 md:px-16">
+    <span class="eyebrow" style="color:rgba(255,255,255,0.75);">COLLECTIVE BRILLIANCE</span>
+    <h1 style="font-family:'Playfair Display',serif;font-size:clamp(44px,6vw,74px);font-weight:600;line-height:1.08;letter-spacing:-0.022em;color:rgba(255,255,255,0.95);margin-bottom:20px;">Community Gallery</h1>
+    <p class="body-lg mx-auto" style="max-width:540px;color:rgba(255,255,255,0.95);">
+      Explore a curated collection of AI-synthesized high jewelry designed by our global community.
+    </p>
+  </div>
+</section>
+
+<!-- ════════════════════════════
+     TWO-COLUMN LAYOUT
+════════════════════════════ -->
+<section class="py-16 bg-[#fbf9f9]">
+  <div class="max-w-[1600px] mx-auto px-4 md:px-16">
+    <div class="flex gap-12 items-start">
+
+      <!-- ══ SIDEBAR ══ -->
+      <aside class="hidden lg:flex flex-col flex-shrink-0 self-start sticky"
+             style="width:260px;top:88px;max-height:calc(100vh - 108px);overflow-y:auto;" id="sidebar">
+
+        <!-- Collections filters -->
+        <div class="mb-8">
+          <span class="eyebrow" style="font-size:10px;margin-bottom:14px;">COLLECTIONS</span>
+          <div class="flex flex-col gap-1.5" id="filterBtns">
+            <button class="coll-filter-btn active" data-filter="rings">
+              <span>Rings</span>
+              <span style="font-weight:400;opacity:0.55;font-size:11px;">124</span>
+            </button>
+            <button class="coll-filter-btn" data-filter="pendants">
+              <span>Pendants</span>
+              <span style="font-weight:400;opacity:0.55;font-size:11px;">89</span>
+            </button>
+            <button class="coll-filter-btn" data-filter="earrings">
+              <span>Earrings</span>
+              <span style="font-weight:400;opacity:0.55;font-size:11px;">215</span>
+            </button>
+            <button class="coll-filter-btn" data-filter="bracelets">
+              <span>Bracelets</span>
+              <span style="font-weight:400;opacity:0.55;font-size:11px;">56</span>
+            </button>
+            <button class="coll-filter-btn" data-filter="necklace-sets">
+              <span>Necklace Sets</span>
+              <span style="font-weight:400;opacity:0.55;font-size:11px;">4</span>
+            </button>
+          </div>
+        </div>
+
+      </aside>
+
+            <!-- ══ GALLERY GRID (rendered by collections-gallery.js) ══ -->
+      <div class="flex-1 min-w-0">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="galleryGrid"></div>
+
+        <!-- Explore more / show less -->
+        <div class="text-center mt-16">
+          <button class="btn-outline" id="exploreMoreBtn" style="font-size:12px;letter-spacing:0.22em;padding:18px 52px;display:none;">
+            EXPLORE MORE MASTERPIECES →
+          </button>
+        </div>
+      </div>
+      <!-- end gallery -->
+
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ════════════════════════════
+     FOOTER
+════════════════════════════ -->
+<footer class="w-full py-24 bg-white border-t border-[#c1c7cb]/12">
+  <div class="max-w-[1600px] mx-auto px-4 md:px-16">
+    <div class="grid grid-cols-12 gap-16 mb-20">
+      <div class="col-span-12 lg:col-span-4 flex flex-col gap-8">
+        <span style="font-family:'Playfair Display',serif;font-size:24px;font-weight:600;letter-spacing:0.32em;color:#3c6474;text-transform:uppercase;">JWLZIFY</span>
+        <p class="body-copy" style="max-width:280px;color:rgba(65,72,75,0.72);">The future of high jewelry. Leading the global revolution in AI-driven bespoke craftsmanship and ethical luxury.</p>
+        <div class="flex gap-4">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#3c6474] hover:text-white transition-all" style="background:#efeded;border:1px solid rgba(193,199,203,0.3);"><span class="material-symbols-outlined" style="font-size:18px;">share</span></div>
+          <div class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#3c6474] hover:text-white transition-all" style="background:#efeded;border:1px solid rgba(193,199,203,0.3);"><span class="material-symbols-outlined" style="font-size:18px;">public</span></div>
+          <div class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#3c6474] hover:text-white transition-all" style="background:#efeded;border:1px solid rgba(193,199,203,0.3);"><span class="material-symbols-outlined" style="font-size:18px;">mail</span></div>
+        </div>
+      </div>
+      <div class="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div class="flex flex-col gap-6">
+          <p class="label" style="font-size:12px;letter-spacing:0.13em;color:#1b1c1c;font-weight:700;">Experience</p>
+          <ul class="flex flex-col gap-3">
+            <li><a href="ailab.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">The Lab</a></li>
+            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Expert Jewelers</a></li>
+            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Your Journey</a></li>
+            <li><a href="collections.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Collections</a></li>
+          </ul>
+        </div>
+        <div class="flex flex-col gap-6">
+          <p class="label" style="font-size:12px;letter-spacing:0.13em;color:#1b1c1c;font-weight:700;">Philosophy</p>
+          <ul class="flex flex-col gap-3">
+            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Ethical Sourcing</a></li>
+            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Sustainability</a></li>
+            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Blockchain Trust</a></li>
+            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Our Story</a></li>
+          </ul>
+        </div>
+        <div class="flex flex-col gap-6">
+          <p class="label" style="font-size:12px;letter-spacing:0.13em;color:#1b1c1c;font-weight:700;">Support</p>
+          <ul class="flex flex-col gap-3">
+            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Account</a></li>
+            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Order Status</a></li>
+            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Shipping &amp; Delivery</a></li>
+            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Returns &amp; Exchanges</a></li>
+            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Warranty</a></li>
+            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Authenticity</a></li>
+            <li><a href="support.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Size Guide</a></li>
+          </ul>
+        </div>
+        <div class="flex flex-col gap-6">
+          <p class="label" style="font-size:12px;letter-spacing:0.13em;color:#1b1c1c;font-weight:700;">Legal</p>
+          <ul class="flex flex-col gap-3">
+            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Privacy Policy</a></li>
+            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Terms &amp; Conditions</a></li>
+            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Returns &amp; Exchanges</a></li>
+            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Shipping Policy</a></li>
+            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Warranty</a></li>
+            <li><a href="legal.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Cookies Policy</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="pt-10 flex flex-col sm:flex-row justify-between items-center gap-4"
+         style="border-top:0.5px solid rgba(193,199,203,0.3);">
+      <p class="label" style="font-size:11px;letter-spacing:0.13em;color:rgba(65,72,75,0.5);">© 2025 JWLZIFY Holdings. All Rights Reserved.</p>
+      <p class="label" style="font-size:11px;letter-spacing:0.13em;color:rgba(65,72,75,0.5);">Crafted with Precision in Toronto &amp; Antwerp</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ════════════════════════════
+     SPECS MODAL
+════════════════════════════ -->
+<div class="specs-modal-overlay" id="specsModal" role="dialog" aria-modal="true" aria-labelledby="specsModalTitle">
+  <div class="specs-modal">
+    <button class="specs-modal-close" id="specsModalClose" aria-label="Close">
+      <span class="material-symbols-outlined" style="font-size:20px;">close</span>
+    </button>
+    <div class="specs-modal-img">
+      <img id="specsModalImg" src="" alt="">
+    </div>
+    <div class="specs-modal-body">
+      <p class="specs-modal-eyebrow">Community Masterpiece</p>
+      <h2 class="specs-modal-title" id="specsModalTitle">—</h2>
+      <ul class="specs-list" id="specsModalList"></ul>
+      <div class="specs-metal-row">
+        <span class="specs-metal-label">Metal</span>
+        <div class="specs-metal-select" id="specsMetalSelect"></div>
+      </div>
+      <div class="specs-price-label">Total Cost</div>
+      <div class="specs-price" id="specsPrice">—</div>
+      <a class="specs-customize-btn" id="specsCustomizeBtn" href="ailab.html">
+        <span class="material-symbols-outlined" style="font-size:16px;">auto_awesome</span>
+        Customize This Design
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('siteHeader').classList.add('nav-visible');
+</script>
+<script type="module" src="firebase-auth.js"></script>
+<script type="module" src="firestore-service.js"></script>
+
+<!-- ════════════════════════════
+     SCRIPTS
+════════════════════════════ -->
+<script src="pricing.js"></script>
+<script src="collections-data.js"></script>
+<script src="collections-gallery.js"></script>
+<script src="mobile-nav.js"></script>
+</body>
+</html>
