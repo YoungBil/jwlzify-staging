@@ -1,7 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html class="light" lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="favicon_transparent.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -11,7 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<!-- STAGING: EmailJS CDN disabled — no emails sent from staging
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+-->
 <script>
 tailwind.config = {
   darkMode:"class",
@@ -543,7 +546,8 @@ tailwind.config = {
   var EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // Email Services tab
   var EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // Email Templates tab
 
-  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+  // STAGING: EmailJS disabled — no real emails are sent from this environment.
+  // emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
   document.getElementById('shippingContactForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -568,31 +572,9 @@ tailwind.config = {
       return;
     }
 
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-    btn.style.cursor = 'not-allowed';
-    feedback.style.display = 'none';
-
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      from_email: email,
-      message:    message,
-      to_email:   'support@jwlzify.com',
-    }).then(function() {
-      feedback.textContent = 'Message sent — we\'ll be in touch soon.';
-      feedback.style.cssText = 'display:block;padding:10px 14px;border-radius:8px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;background:rgba(60,100,116,0.08);color:#2d6a4f;border:1px solid rgba(60,100,116,0.2);';
-      emailEl.value = '';
-      msgEl.value   = '';
-      btn.disabled  = false;
-      btn.style.opacity = '';
-      btn.style.cursor  = '';
-    }, function(err) {
-      console.error('[EmailJS] send failed:', err);
-      feedback.textContent = 'Something went wrong. Please try again or email us directly.';
-      feedback.style.cssText = 'display:block;padding:10px 14px;border-radius:8px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;background:rgba(220,53,69,0.08);color:#c0392b;border:1px solid rgba(220,53,69,0.2);';
-      btn.disabled  = false;
-      btn.style.opacity = '';
-      btn.style.cursor  = '';
-    });
+    // STAGING: form submission disabled — show a notice instead of sending.
+    feedback.textContent = 'Staging environment — message not sent.';
+    feedback.style.cssText = 'display:block;padding:10px 14px;border-radius:8px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;background:rgba(201,168,76,0.12);color:#8a6d2a;border:1px solid rgba(201,168,76,0.35);';
   });
 </script>
 <script src="mobile-nav.js"></script>
