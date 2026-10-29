@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jwlzify</title>
+<link rel="icon" type="image/png" href="../favicon_transparent.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+<script>
+/* Pre-paint boot: enable hidden-until-animated states only when motion is allowed,
+   with a safety timer that restores everything if the runtime never boots. */
+(function () {
+  var d = document.documentElement, rm = false;
+  try { rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  if (!rm) {
+    d.classList.add('motion-on');
+    setTimeout(function () {
+      if (!window.__jwlzV2Booted) d.classList.remove('motion-on');
+    }, 3000);
+  }
+})();
+</script>
+</head>
+<body>
+
+<header id="nav">
+  <a class="wordmark" href="./">JWLZIFY</a>
+  <nav class="nav-links" aria-label="Site">
+    <a href="../collections.html">Collections</a>
+    <a href="../ailab.html">AI Lab</a>
+    <a href="../about.html">About</a>
+    <a href="../support.html">Support</a>
+  </nav>
+  <a class="btn btn-sm" href="../ailab.html">Start designing</a>
+</header>
+
+<main>
+
+<!-- ━━━ SCENE 1 · HERO ━━━ -->
+<section class="scene" id="s-hero">
+  <div class="media">
+    <img id="heroImg" src="images/hero-ring.webp" fetchpriority="high"
+         alt="A sterling silver solitaire ring with a lab-grown diamond resting on teal stone">
+  </div>
+  <div class="scrim scrim-hero" aria-hidden="true"></div>
+  <div class="sweep-band" aria-hidden="true"></div>
+  <div class="shell hero-copy">
+    <h1 id="slogan">Your imagination, finely crafted.</h1>
+    <span class="btn-wrap"><a class="btn" href="../ailab.html">Start designing</a></span>
+  </div>
+  <div class="scroll-cue" aria-hidden="true"><span></span></div>
+</section>
+
+<!-- ━━━ SCENE 2 · IMAGINE (pinned) ━━━ -->
+<section class="scene scene-pin" id="s-imagine">
+  <div class="shell imagine-stage">
+    <p class="kicker st-i">The Lab</p>
+    <h2 class="scene-h st-i">Begin with a thought</h2>
+    <p class="type-line" id="typeLine">&ldquo;a delicate silver pendant, one moissanite stone&rdquo;</p>
+    <div class="resolve-frame st-i">
+      <img class="resolve-blur" src="images/imagine-piece-tiny.webp" alt="" aria-hidden="true">
+      <img class="resolve-sharp" src="images/imagine-piece.webp" loading="lazy"
+           alt="A silver pendant with a single moissanite stone above white silk">
+    </div>
+    <p class="scene-sub st-i">Describe the piece you imagine, and watch it take shape &mdash; yours to refine until it feels right.</p>
+  </div>
+</section>
+
+<!-- ━━━ SCENE 3 · TRY ON ━━━ -->
+<section class="scene" id="s-tryon">
+  <div class="shell split">
+    <div class="viewfinder st-t">
+      <span class="vf-corner vf-tl" aria-hidden="true"></span>
+      <span class="vf-corner vf-tr" aria-hidden="true"></span>
+      <span class="vf-corner vf-bl" aria-hidden="true"></span>
+      <span class="vf-corner vf-br" aria-hidden="true"></span>
+      <div class="vf-media">
+        <img src="images/cat-earrings.webp" loading="lazy"
+             alt="A pair of gold stud earrings with lab-grown diamonds on a teal pebble">
+        <div class="vf-sweep" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div class="split-copy">
+      <p class="kicker st-t">Live try-on</p>
+      <h2 class="scene-h st-t">See it on you</h2>
+      <p class="scene-sub st-t">Open your camera and wear your design before it exists &mdash; with a live quote that takes shape as you refine it.</p>
+      <a class="link-quiet st-t" href="../ailab.html">Open the Lab</a>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━ SCENE 4 · MATERIALS (pinned) ━━━ -->
+<section class="scene scene-pin" id="s-materials">
+  <div class="shell materials-stage">
+    <div class="materials-head">
+      <p class="kicker st-m">Materials</p>
+      <h2 class="scene-h st-m">Three metals. Two stones.</h2>
+    </div>
+    <div class="mat-track">
+      <article class="mat-panel" data-mat="0">
+        <div class="mat-media"><img src="images/mat-silver.webp" loading="lazy" alt="A polished sterling silver band beside loose moissanite stones on marble"></div>
+        <div class="mat-copy">
+          <h3>925 Sterling Silver</h3>
+          <p>Set with moissanite or lab-grown diamonds.</p>
+        </div>
+      </article>
+      <article class="mat-panel" data-mat="1">
+        <div class="mat-media"><img src="images/mat-10k.webp" loading="lazy" alt="A 10k gold band set with small lab-grown diamonds"></div>
+        <div class="mat-copy">
+          <h3>10k Gold</h3>
+          <p>Set with lab-grown diamonds.</p>
+        </div>
+      </article>
+      <article class="mat-panel" data-mat="2">
+        <div class="mat-media"><img src="images/mat-14k.webp" loading="lazy" alt="A 14k gold solitaire ring with a lab-grown diamond on teal velvet"></div>
+        <div class="mat-copy">
+          <h3>14k Gold</h3>
+          <p>Set with lab-grown diamonds.</p>
+        </div>
+      </article>
+    </div>
+    <div class="mat-progress" aria-hidden="true"><span id="matFill"></span></div>
+  </div>
+</section>
+
+<!-- ━━━ SCENE 5 · CATEGORIES (pinned) ━━━ -->
+<section class="scene scene-pin" id="s-categories">
+  <div class="cat-layers" aria-hidden="true">
+    <div class="cat-layer" data-cat="0"><img src="images/cat-rings.webp"     loading="lazy" alt=""></div>
+    <div class="cat-layer" data-cat="1"><img src="images/cat-chains.webp"    loading="lazy" alt=""></div>
+    <div class="cat-layer" data-cat="2"><img src="images/cat-bracelets.webp" loading="lazy" alt=""></div>
+    <div class="cat-layer" data-cat="3"><img src="images/cat-pendants.webp"  loading="lazy" alt=""></div>
+    <div class="cat-layer" data-cat="4"><img src="images/cat-earrings.webp"  loading="lazy" alt=""></div>
+  </div>
+  <div class="scrim scrim-cat" aria-hidden="true"></div>
+  <div class="cat-center">
+    <p class="kicker">The collections</p>
+    <div class="cat-names">
+      <a class="cat-name" data-cat="0" href="../collections.html">Rings</a>
+      <a class="cat-name" data-cat="1" href="../collections.html">Chains</a>
+      <a class="cat-name" data-cat="2" href="../collections.html">Bracelets</a>
+      <a class="cat-name" data-cat="3" href="../collections.html">Pendants</a>
+      <a class="cat-name" data-cat="4" href="../collections.html">Earrings</a>
+    </div>
+    <a class="link-quiet" href="../collections.html">Explore the collections</a>
+    <div class="cat-ticks" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━ SCENE 6 · CLOSE ━━━ -->
+<section class="scene" id="s-close">
+  <div class="shell close-stage">
+    <p class="close-pre st-c">Designed by you. Tried on live. Quoted as you watch.</p>
+    <h2 class="close-line st-c">Wear a piece no one else will ever own.</h2>
+    <span class="btn-wrap st-c"><a class="btn" href="../ailab.html">Start designing</a></span>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="shell foot-inner">
+    <span class="foot-mark">JWLZIFY</span>
+    <nav class="foot-links" aria-label="Footer">
+      <a href="../collections.html">Collections</a>
+      <a href="../ailab.html">AI Lab</a>
+      <a href="../about.html">About</a>
+      <a href="../support.html">Support</a>
+      <a href="../legal.html">Legal</a>
+    </nav>
+    <p class="foot-note">&copy; 2026 JWLZIFY Holdings. All Rights Reserved.</p>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>
