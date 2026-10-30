@@ -76,6 +76,20 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(initScenes);
   setTimeout(initScenes, 900);
 
+  // Enlarge SplitText line masks so italic ascenders/descenders and right-side
+  // overhang are never cut during the reveal: padding grows each mask box
+  // ~0.2em beyond the glyphs, equal negative margins keep layout identical.
+  // Use on ANY masked headline reveal.
+  function padSplitMasks(sp) {
+    var masks = sp.masks && sp.masks.length ? sp.masks
+      : sp.lines.map(function (l) { return l.parentElement; });
+    masks.forEach(function (m) {
+      if (!m) return;
+      m.style.padding = '0.22em 0.22em 0.22em 0.12em';
+      m.style.margin = '-0.22em -0.22em -0.22em -0.12em';
+    });
+  }
+
   // ── Scene 1 · Hero (v1 masked line reveal) ──
   function hero() {
     var slogan = document.getElementById('slogan');
@@ -84,8 +98,13 @@
     if (hasSplit && slogan) {
       try {
         var sp = SplitText.create(slogan, { type: 'lines', mask: 'lines' });
+        padSplitMasks(sp);
         gsap.set(slogan, { opacity: 1 });
-        tl.from(sp.lines, { yPercent: 115, duration: 1.2, stagger: 0.12 }, 0);
+        // 140% (not 115%) so the padded, taller masks still fully hide each line
+        tl.from(sp.lines, { yPercent: 140, duration: 1.2, stagger: 0.12 }, 0);
+        // once the reveal is done, drop the wrappers entirely — the headline
+        // returns to plain text, so nothing can clip it (and resizes are safe)
+        tl.call(function () { try { sp.revert(); gsap.set(slogan, { opacity: 1 }); } catch (e) {} }, [], 1.5);
         split = true;
       } catch (e) { /* fallback below */ }
     }
