@@ -56,29 +56,74 @@ html.intro-pending .intro-mark { opacity: 0; }
   width: 100%; height: 100%; object-fit: cover;
   will-change: transform;
 }
+/* Deep-turquoise shade built for ANY hero image: a soft radial core sits
+   directly behind the copy (which is left-of-centre, clear of the jewelry)
+   and fades out so the pieces stay bright. */
 .hero-shade {
   position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(180deg,
-    rgba(0, 0, 0, 0.42) 0%,
-    rgba(0, 0, 0, 0.24) 38%,
-    rgba(0, 0, 0, 0.32) 72%,
-    rgba(14, 26, 33, 0.92) 100%);
+  background:
+    radial-gradient(ellipse 46% 52% at 27% 55%,
+      rgba(10, 24, 32, 0.68) 0%,
+      rgba(10, 24, 32, 0.52) 48%,
+      rgba(10, 24, 32, 0.18) 78%,
+      transparent 100%),
+    linear-gradient(180deg,
+      rgba(10, 24, 32, 0.45) 0%,
+      rgba(10, 24, 32, 0.12) 38%,
+      rgba(10, 24, 32, 0.18) 72%,
+      rgba(14, 26, 33, 0.92) 100%);
 }
+#s-hero { justify-content: flex-start; }
 .hero-content {
   position: relative; z-index: 2;
-  display: flex; flex-direction: column; align-items: center;
-  text-align: center;
+  display: flex; flex-direction: column; align-items: flex-start;
+  text-align: left;
   padding: 18vh 24px 10vh;
-  max-width: 1100px;
+  max-width: 720px;
 }
+@media (min-width: 768px) { .hero-content { padding-left: 64px; } }
 .hero-h1 {
   font-family: var(--serif-it);
   font-size: clamp(42px, 5.5vw, 72px);
   font-weight: 600; font-style: italic;
   line-height: 1.1; letter-spacing: -0.01em;
   color: #ffffff;
-  text-shadow: 0 2px 28px rgba(0, 0, 0, 0.28);
+  text-shadow: 0 1px 3px rgba(10, 24, 32, 0.5), 0 2px 30px rgba(10, 24, 32, 0.45);
   margin-bottom: 48px;
+}
+/* Hero CTA: semi-transparent deep-turquoise fill + blur so it reads on any
+   image. The fill lives in ::after (z -2) so the ivory hover sweep (::before,
+   z -1) still passes above it; text stays on top. */
+#s-hero .btn-inverse {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+#s-hero .btn-inverse::after {
+  content: '';
+  position: absolute; inset: 0; z-index: -2;
+  background: rgba(10, 24, 32, 0.72);
+}
+
+/* narrow crops: the pieces swing through the upper two-thirds of the frame,
+   so the copy moves to the bottom third where the shade is deepest
+   (this block must come AFTER the base .hero-* rules to win the cascade) */
+@media (max-width: 767px) {
+  #s-hero { align-items: flex-end; }
+  .hero-content { padding: 0 24px 15vh; }
+  .hero-shade {
+    background:
+      radial-gradient(ellipse 90% 46% at 42% 76%,
+        rgba(10, 24, 32, 0.78) 0%,
+        rgba(10, 24, 32, 0.62) 50%,
+        rgba(10, 24, 32, 0.25) 80%,
+        transparent 100%),
+      linear-gradient(180deg,
+        rgba(10, 24, 32, 0.45) 0%,
+        rgba(10, 24, 32, 0.1) 35%,
+        rgba(10, 24, 32, 0.5) 68%,
+        rgba(14, 26, 33, 0.95) 100%);
+  }
 }
 html.motion-on .hero-h1 { opacity: 0; }
 html.motion-on .hero-cta { opacity: 0; transform: translateY(28px); }
@@ -166,23 +211,7 @@ html.motion-on .style-center {
 @media (min-width: 768px) {
   html.motion-on .style-center { padding: 90px 64px 60px; max-width: 760px; }
 }
-.style-dial { display: flex; gap: 26px; margin: 26px 0 18px; }
-.style-view {
-  position: relative;
-  font-family: var(--sans);
-  font-size: 13px; font-weight: 500;
-  letter-spacing: 0.26em; text-transform: uppercase;
-  color: var(--ivory);
-  opacity: 0.38;
-  padding-bottom: 7px;
-}
-.style-view::after {
-  content: '';
-  position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
-  background: var(--t-200);
-  transform: scaleX(0); transform-origin: left center;
-}
-.style-meta { display: flex; align-items: center; gap: 22px; margin-bottom: 24px; }
+.style-meta { display: flex; align-items: center; gap: 22px; margin: 26px 0 24px; }
 .style-tones { display: flex; gap: 10px; }
 .tone {
   width: 14px; height: 14px; border-radius: 50%;

@@ -122,19 +122,17 @@
       .to({}, { duration: 0.5 });
   }
 
-  // ── Scene 3 · Style My Design (pinned: tones → on-model views → campaign) ──
+  // ── Scene 3 · Style My Design (pinned: tones → on-model shots → evening mood) ──
   function styleScene() {
     var layers = gsap.utils.toArray('#s-style .style-layer');
     if (!layers.length) return;
     var tones = gsap.utils.toArray('#s-style .tone i');
-    var views = gsap.utils.toArray('#s-style .style-view');
     var moodQ = document.querySelector('#s-style .mood-q');
     var moodE = document.querySelector('#s-style .mood-e');
     var evScrim = document.querySelector('#s-style .style-scrim-ev');
 
     gsap.set(layers, { autoAlpha: 0 });
     gsap.set(layers[0], { autoAlpha: 1 });
-    if (views[0]) gsap.set(views[0], { opacity: 1 });
 
     var seg = 1.1;
     var tl = gsap.timeline({
@@ -155,9 +153,7 @@
       if (i === 1 && tones[1]) { tl.to(tones[0], { opacity: 0, duration: 0.3 }, t); tl.to(tones[1], { opacity: 1, duration: 0.3 }, t); }
       if (i === 2 && tones[2]) { tl.to(tones[1], { opacity: 0, duration: 0.3 }, t); tl.to(tones[2], { opacity: 1, duration: 0.3 }, t); }
       if (i === layers.length - 1) {
-        // The Campaign — evening mood
-        if (views[0]) tl.to(views[0], { opacity: 0.38, duration: 0.4 }, t);
-        if (views[1]) tl.to(views[1], { opacity: 1, duration: 0.4 }, t);
+        // final shot — evening mood
         if (moodQ) tl.to(moodQ, { opacity: 0, duration: 0.4 }, t);
         if (moodE) tl.to(moodE, { opacity: 1, duration: 0.4 }, t);
         tl.to('#s-style .style-tones', { opacity: 0.25, duration: 0.4 }, t);
