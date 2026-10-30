@@ -1,0 +1,37 @@
+/* ════════════════════════════════════════════════════
+   JWLZIFY v2 — AI Lab skin (look only).
+   Loaded last on v2/ailab.html: adds the v2 header band
+   and patches presentation on top of the lab's own CSS.
+   No layout or behaviour changes.
+════════════════════════════════════════════════════ */
+
+/* v2.css sets the body face to Jost for the shell pages; the Lab keeps its
+   own Inter base so nothing shifts. */
+body { font-family: 'Inter', sans-serif; }
+
+/* ── Dark header band under the fixed v2 nav ─────── */
+.ailab-band {
+  background:
+    radial-gradient(ellipse 70% 90% at 50% 110%, rgba(60, 100, 116, 0.45), transparent),
+    linear-gradient(180deg, #0e1a21, #1a2e38);
+  padding: 126px 24px 44px;
+  text-align: center;
+}
+.ailab-band-kicker {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.38em; text-transform: uppercase;
+  color: #b9e2f5;
+  margin: 0 0 10px;
+}
+.ailab-band-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 3.6vw, 42px);
+  font-weight: 500; line-height: 1.15;
+  color: #fbf9f9;
+  margin: 0;
+}
+@media (max-width: 767px) { .ailab-band { padding-top: 106px; } }
+
+/* The lab's sticky progress bar assumed a 73px sticky header; the v2 nav is
+   fixed and about the same height, so the inline top:73px still lines up. */

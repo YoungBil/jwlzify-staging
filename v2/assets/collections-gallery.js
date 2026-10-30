@@ -269,7 +269,7 @@
     mImg.setAttribute('src', '../images/collections/' + item.id + '.jpg');
     mImg.setAttribute('alt', item.name);
     mTitle.textContent = item.name;
-    if (mCustomize) mCustomize.setAttribute('href', '../ailab.html'); // piece is passed via sessionStorage on click
+    if (mCustomize) mCustomize.setAttribute('href', 'ailab.html'); // piece is passed via sessionStorage on click
     renderSpecList(item, _openMetal);
     renderMetalSelect(_openMetal);
     renderPrice(item, _openMetal);

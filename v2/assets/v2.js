@@ -125,8 +125,11 @@
   })();
 
   // ── firebase-auth.js injects a sign-in modal whose legal link targets the
-  //    root page; from /v2/ that path doesn't exist — retarget to v2 terms. ──
+  //    root page; from /v2/ that path doesn't exist — retarget to v2 terms.
+  //    (Pages with a <base href="../"> resolve the original link correctly,
+  //    so they are left alone.) ──
   (function () {
+    if (document.querySelector('base')) return;
     function fix() {
       var a = document.querySelector('#signInModal a[href="legal.html"]');
       if (a) { a.setAttribute('href', 'terms.html'); return true; }
