@@ -47,8 +47,9 @@
       defaults: { ease: 'power3.out' },
       onComplete: function () { el.remove(); docEl.classList.remove('intro-pending'); }
     })
-      .fromTo('.intro-mark', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.7 }, 0.05)
-      .fromTo('.intro-line span', { scaleX: 0 }, { scaleX: 1, duration: 0.8, ease: 'expo.out' }, 0.25)
+      .fromTo('.intro-logo', { opacity: 0, y: 10, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.7 }, 0.05)
+      .fromTo('.intro-mark', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.7 }, 0.18)
+      .fromTo('.intro-line span', { scaleX: 0 }, { scaleX: 1, duration: 0.8, ease: 'expo.out' }, 0.32)
       .to(el, { opacity: 0, duration: 0.45, ease: 'power2.inOut' }, 0.95);
   })();
 
