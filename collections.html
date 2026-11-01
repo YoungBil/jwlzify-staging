@@ -198,7 +198,7 @@ tailwind.config = {
 
 .coll-img.loaded { opacity: 1; }
 
-/* ── Specs modal ── */
+/* ── Specs modal (site palette: turquoise #3c6474 / #b9e2f5 on white) ── */
 .specs-modal-overlay {
   position: fixed;
   inset: 0;
@@ -207,7 +207,7 @@ tailwind.config = {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(6, 9, 16, 0.72);
+  background: rgba(27, 28, 28, 0.45);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
@@ -218,11 +218,11 @@ tailwind.config = {
   max-width: 860px;
   max-height: 90vh;
   overflow-y: auto;
-  background: #0B0F1A;
-  color: #ECECEC;
-  border: 1px solid rgba(201,168,76,0.30);
+  background: #ffffff;
+  color: #1b1c1c;
+  border: 1px solid rgba(193,199,203,0.35);
   border-radius: 18px;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+  box-shadow: 0 30px 80px rgba(60,100,116,0.25);
   display: flex;
   flex-direction: column;
 }
@@ -235,24 +235,24 @@ tailwind.config = {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 1px solid rgba(201,168,76,0.35);
-  background: rgba(11,15,26,0.7);
-  color: #C9A84C;
+  border: 1px solid rgba(60,100,116,0.25);
+  background: rgba(255,255,255,0.9);
+  color: #3c6474;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.18s ease, transform 0.18s ease;
 }
-.specs-modal-close:hover { background: rgba(201,168,76,0.15); transform: rotate(90deg); }
+.specs-modal-close:hover { background: rgba(185,226,245,0.45); transform: rotate(90deg); }
 .specs-modal-img {
   flex: 0 0 auto;
   width: 100%;
-  background: #11151f;
+  background: #f5f3f3;
   border-radius: 18px 18px 0 0;
 }
 @media (min-width: 720px) {
-  .specs-modal-img { width: 44%; border-radius: 18px 0 0 18px; }
+  .specs-modal-img { width: 40%; border-radius: 18px 0 0 18px; }
 }
 .specs-modal-img img { width: 100%; height: 100%; max-height: 340px; object-fit: cover; display: block; border-radius: inherit; }
 @media (min-width: 720px) { .specs-modal-img img { max-height: none; } }
@@ -262,21 +262,21 @@ tailwind.config = {
   font-size: 10px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #C9A84C;
+  color: #3c6474;
 }
 .specs-modal-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: 34px;
   font-weight: 600;
   line-height: 1.12;
-  color: #ffffff;
+  color: #1b1c1c;
   margin: 8px 0 4px;
 }
 .specs-modal-handle {
   font-family: 'Inter', sans-serif;
   font-size: 12px;
   letter-spacing: 0.06em;
-  color: rgba(236,236,236,0.55);
+  color: rgba(65,72,75,0.6);
   margin-bottom: 22px;
 }
 .specs-list { list-style: none; margin: 0 0 26px; padding: 0; }
@@ -285,55 +285,79 @@ tailwind.config = {
   justify-content: space-between;
   gap: 18px;
   padding: 11px 0;
-  border-bottom: 1px solid rgba(201,168,76,0.14);
+  border-bottom: 1px solid rgba(193,199,203,0.35);
   font-family: 'Inter', sans-serif;
   font-size: 14px;
 }
-.specs-list li .k { color: rgba(236,236,236,0.55); letter-spacing: 0.04em; }
-.specs-list li .v { color: #ECECEC; font-weight: 500; text-align: right; }
-.specs-list li .v.price { color: #C9A84C; font-weight: 600; }
+.specs-list li .k { color: #71787c; letter-spacing: 0.04em; }
+.specs-list li .v { color: #1b1c1c; font-weight: 500; text-align: right; }
+.specs-list li .v.price { color: #3c6474; font-weight: 600; }
+
+/* ── Modal actions: Buy (primary) + Customize (secondary, outlined) ── */
+.specs-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.specs-buy-btn,
 .specs-customize-btn {
+  flex: 1 1 0;
+  min-width: 190px;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
   font-family: 'Inter', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #0B0F1A;
-  background: #C9A84C;
-  border: none;
   border-radius: 10px;
-  padding: 15px 30px;
+  padding: 14px 12px;
   cursor: pointer;
   text-decoration: none;
-  transition: filter 0.18s ease, transform 0.18s ease;
+  transition: background 0.18s ease, filter 0.18s ease, transform 0.18s ease;
 }
-.specs-customize-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.specs-buy-btn {
+  color: #ffffff;
+  background: #3c6474;
+  border: 1.5px solid #3c6474;
+  box-shadow: 0 6px 18px rgba(60,100,116,0.22);
+}
+.specs-buy-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.specs-customize-btn {
+  color: #3c6474;
+  background: transparent;
+  border: 1.5px solid #3c6474;
+}
+.specs-customize-btn:hover { background: rgba(185,226,245,0.3); transform: translateY(-1px); }
+.specs-lead-time {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #5e5e5b;
+  margin-top: 14px;
+}
 
 /* ── Modal metal selector + computed price ── */
 .specs-metal-row { display: flex; align-items: center; gap: 14px; margin: 4px 0 18px; flex-wrap: wrap; }
 .specs-metal-label {
   font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: 0.14em;
-  text-transform: uppercase; color: rgba(236,236,236,0.55);
+  text-transform: uppercase; color: #71787c;
 }
 .specs-metal-select { display: flex; gap: 8px; flex-wrap: wrap; }
 .specs-metal-btn {
   font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
-  color: #ECECEC; background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(201,168,76,0.3); border-radius: 999px;
+  color: #3c6474; background: #ffffff;
+  border: 1px solid rgba(60,100,116,0.3); border-radius: 999px;
   padding: 7px 14px; cursor: pointer; transition: all 0.18s ease;
 }
-.specs-metal-btn:hover { border-color: rgba(201,168,76,0.6); }
-.specs-metal-btn.active { background: #C9A84C; color: #0B0F1A; border-color: #C9A84C; font-weight: 600; }
+.specs-metal-btn:hover { border-color: #3c6474; background: rgba(185,226,245,0.2); }
+.specs-metal-btn.active { background: #3c6474; color: #ffffff; border-color: #3c6474; font-weight: 600; }
 .specs-price-label {
   font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: 0.18em;
-  text-transform: uppercase; color: rgba(236,236,236,0.5); margin-bottom: 2px;
+  text-transform: uppercase; color: #71787c; margin-bottom: 2px;
 }
 .specs-price {
   font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 600;
-  color: #C9A84C; margin-bottom: 22px;
+  color: #3c6474; margin-bottom: 22px;
 }
 
 </style>
@@ -476,7 +500,6 @@ tailwind.config = {
           <ul class="flex flex-col gap-3">
             <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Ethical Sourcing</a></li>
             <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Sustainability</a></li>
-            <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Blockchain Trust</a></li>
             <li><a href="about.html" class="body-copy hover:text-[#3c6474] transition-colors" style="font-size:14px;">Our Story</a></li>
           </ul>
         </div>
@@ -534,10 +557,17 @@ tailwind.config = {
       </div>
       <div class="specs-price-label">Total Cost</div>
       <div class="specs-price" id="specsPrice">—</div>
-      <a class="specs-customize-btn" id="specsCustomizeBtn" href="ailab.html">
-        <span class="material-symbols-outlined" style="font-size:16px;">auto_awesome</span>
-        Customize This Design
-      </a>
+      <div class="specs-actions">
+        <a class="specs-buy-btn" id="specsBuyBtn" href="ailab.html">
+          <span class="material-symbols-outlined" style="font-size:16px;">shopping_bag</span>
+          Buy This Piece
+        </a>
+        <a class="specs-customize-btn" id="specsCustomizeBtn" href="ailab.html">
+          <span class="material-symbols-outlined" style="font-size:16px;">auto_awesome</span>
+          Customize This Design
+        </a>
+      </div>
+      <p class="specs-lead-time">Ready-made pieces ship in about 7 days. Custom pieces take up to 45 days.</p>
     </div>
   </div>
 </div>

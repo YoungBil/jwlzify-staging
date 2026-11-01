@@ -3,7 +3,9 @@
  * window.COLLECTION_ITEMS (collections-data.js). Handles:
  *   - category filtering (sidebar tabs) — every piece in a category renders at once
  *   - lazy images + shimmer + fade-in + branded fallback
- *   - the spec detail modal + "Customize This Design" handoff to the AI Lab
+ *   - the spec detail modal + its two AI Lab handoffs:
+ *       "Buy This Piece"         → sessionStorage jwlz_buy_piece       → AI Lab Order step
+ *       "Customize This Design"  → sessionStorage jwlz_customize_piece → AI Lab Refine step
  */
 (function () {
   'use strict';
@@ -21,10 +23,12 @@
 
   // ── Pricing (shared AI Lab formula via pricing.js) + locked metal options ──
   var P = window.JWLZ_PRICING;
+  // `phrase` is how each item's desc names its default metal (collections-data.js),
+  // so the AI Lab prompt can be re-worded for the metal picked in the modal.
   var METAL_OPTIONS = [
-    { code: '925silver', display: '925 Sterling Silver', karat: '925' },
-    { code: '10ctgold',  display: '10k Gold',            karat: '10k' },
-    { code: '14ctgold',  display: '14k Gold',            karat: '14k' }
+    { code: '925silver', display: '925 Sterling Silver', karat: '925', phrase: '925 sterling silver' },
+    { code: '10ctgold',  display: '10k Gold',            karat: '10k', phrase: '10k yellow gold' },
+    { code: '14ctgold',  display: '14k Gold',            karat: '14k', phrase: '14k yellow gold' }
   ];
   console.log('[Collections] metal options locked to: 925 silver, 10k gold, 14k gold');
 
@@ -40,14 +44,11 @@
   // Style → chain/structure KEY for the worker's weight model. Names only — the
   // grams-per-cm numbers live in the calc-price worker, never in client code.
   // Keys mirror what the AI Lab sends for the same piece (_pricingGeomFields): every
-  // bracelet prices as a 'tennis' band and a continuous-line necklace as 'tennis',
-  // other necklaces as their own chain — so the Customize handoff quotes identically.
-  var CHAIN_STYLE_KEY = {
-    bracelet: { 'Tennis': 'tennis', 'Cuff': 'tennis', 'Link': 'tennis', 'Bangle': 'tennis',
-                'Station': 'tennis', 'Line': 'tennis' },
-    necklace: { 'Tennis': 'tennis', 'Station': 'station', 'Choker': 'choker', 'Chain': 'cable',
-                'Rivière': 'tennis', 'Rope': 'rope' }
-  };
+  // bracelet prices as a 'tennis' band (the AI Lab always sends 'tennis'), a
+  // continuous-line necklace as 'tennis', other necklaces as their own chain key
+  // (an AI Lab chain-style id) — so the Buy / Customize handoffs quote identically.
+  var BRACELET_CHAIN_KEY = 'tennis';
+  var NECKLACE_CHAIN_KEY = { 'Tennis': 'tennis', 'Wave Tennis': 'tennis', 'Cuban Link': 'cuban' };
   // Pendant plate size = the AI Lab's default pendant size (_pendantDims), so the worker
   // derives pendant grams here exactly as it does for that pendant in the AI Lab.
   var PENDANT_SIZE_MM = { w: 15, h: 20 };
@@ -55,8 +56,8 @@
     var s = item.specs || {};
     var o = { metalCode: metalCode || s.metalCode, stoneCode: s.stoneType,
               jewelryType: s.jewelryType, carats: s.carats, stoneCount: s.stoneCount };
-    var map = CHAIN_STYLE_KEY[item.category];
-    if (map && map[s.style]) o.chainStyle = map[s.style];
+    if (item.category === 'bracelet') o.chainStyle = BRACELET_CHAIN_KEY;
+    if (item.category === 'necklace') o.chainStyle = NECKLACE_CHAIN_KEY[s.style] || 'cable';
     if (item.category === 'pendant') { o.pendantWidthMm = PENDANT_SIZE_MM.w; o.pendantHeightMm = PENDANT_SIZE_MM.h; }
     return o;
   }
@@ -212,6 +213,7 @@
   var mTitle     = document.getElementById('specsModalTitle');
   var mList      = document.getElementById('specsModalList');
   var mCustomize = document.getElementById('specsCustomizeBtn');
+  var mBuy       = document.getElementById('specsBuyBtn');
   var mMetalSel  = document.getElementById('specsMetalSelect');
   var mPrice     = document.getElementById('specsPrice');
   // Material/Karat are driven by the selected metal; price is computed (no static range row).
@@ -269,7 +271,9 @@
     mImg.setAttribute('src', 'images/collections/' + item.id + '.jpg');
     mImg.setAttribute('alt', item.name);
     mTitle.textContent = item.name;
-    if (mCustomize) mCustomize.setAttribute('href', 'ailab.html'); // piece is passed via sessionStorage on click
+    // The piece is passed via sessionStorage on click; both links go to the AI Lab.
+    if (mCustomize) mCustomize.setAttribute('href', 'ailab.html');
+    if (mBuy) mBuy.setAttribute('href', 'ailab.html');
     renderSpecList(item, _openMetal);
     renderMetalSelect(_openMetal);
     renderPrice(item, _openMetal);
@@ -298,34 +302,50 @@
     renderPrice(_openItem, _openMetal);
   });
 
-  // "Customize This Design" → hand this piece (with the selected metal) to the AI Lab,
-  // which loads it straight into the Refine step. Written synchronously before the <a> navigates.
+  // The open piece (with the metal selected in the modal) as the AI Lab handoff payload.
   // Carries every pricing input the modal price used, so the AI Lab quote re-prices
   // the same spec through the same worker.
-  if (mCustomize) mCustomize.addEventListener('click', function () {
-    if (!_openItem) return;
-    var s = _openItem.specs || {};
-    var metal = _openMetal || s.metalCode;
-    var geo = specOf(_openItem, metal);
-    var payload = {
-      id:         _openItem.id,
-      name:       _openItem.name,
+  function piecePayload(item, metal) {
+    var s = item.specs || {};
+    var geo = specOf(item, metal);
+    // desc names the default metal; re-word it for the selected one.
+    var prompt = item.desc || item.name;
+    if (metal !== s.metalCode) prompt = prompt.split(metalOf(s.metalCode).phrase).join(metalOf(metal).phrase);
+    return {
+      id:         item.id,
+      name:       item.name,
       type:       s.jewelryType,                 // ring | pendant | earrings | bracelet | necklace
       material:   metal,                         // 925silver | 10ctgold | 14ctgold (AI Lab codes)
-      gem:        s.stoneType,                    // lab_diamond | natural_diamond | moissanite_vvsd | none
+      gem:        s.stoneType,                   // lab_diamond | moissanite_vvsd | none
       style:      s.style,
-      imageUrl:   new URL('images/collections/' + _openItem.id + '.jpg', window.location.href).href,
-      prompt:     _openItem.desc || _openItem.name,
-      grams:      cachedGrams(_openItem, metal), // worker-derived metalGrams for this metal
-      price:      cachedPrice(_openItem, metal), // the modal price, for the AI Lab's parity log
+      imageUrl:   new URL('images/collections/' + item.id + '.jpg', window.location.href).href,
+      prompt:     prompt,
+      grams:      cachedGrams(item, metal),      // worker-derived metalGrams for this metal
+      price:      cachedPrice(item, metal),      // the modal price (Buy: the price shown; Customize: parity log)
       carats:     s.carats,
       stoneCount: s.stoneCount,
-      centreCt:   s.centreCt,
       form:       s.form,                        // earrings only: stud | hoop | drop
       chainStyle: geo.chainStyle,                // bracelet / necklace weight key
       pendantWidthMm:  geo.pendantWidthMm,       // pendant plate size
       pendantHeightMm: geo.pendantHeightMm
     };
+  }
+
+  // "Buy This Piece" → the ready-made piece goes straight to the AI Lab Order step
+  // (re-priced there through the same worker). Written synchronously before the <a> navigates.
+  if (mBuy) mBuy.addEventListener('click', function () {
+    if (!_openItem) return;
+    var payload = piecePayload(_openItem, _openMetal || _openItem.specs.metalCode);
+    payload.readyMade = true;
+    try { sessionStorage.setItem('jwlz_buy_piece', JSON.stringify(payload)); } catch (e) {}
+    console.log('[Collections] buy → AI Lab order:', _openItem.id, '| metal:', payload.material,
+      '| modal price:', payload.price, '| grams:', payload.grams);
+  });
+
+  // "Customize This Design" → the piece loads straight into the AI Lab Refine step.
+  if (mCustomize) mCustomize.addEventListener('click', function () {
+    if (!_openItem) return;
+    var payload = piecePayload(_openItem, _openMetal || _openItem.specs.metalCode);
     try { sessionStorage.setItem('jwlz_customize_piece', JSON.stringify(payload)); } catch (e) {}
     console.log('[Collections] customize → AI Lab refine:', _openItem.id, '| metal:', payload.material,
       '| modal price:', payload.price, '| grams:', payload.grams);

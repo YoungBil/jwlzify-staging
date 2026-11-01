@@ -234,7 +234,8 @@ function priceItem(item, spot) {
 }
 
 /* ── Shared security: origin allowlist + best-effort per-IP rate limit ───────── */
-const ALLOWED_ORIGINS = ['https://jwlzify.com', 'https://www.jwlzify.com'];
+// youngbil.github.io = the staging/test site (GitHub Pages: YoungBil/jwlzify-staging).
+const ALLOWED_ORIGINS = ['https://jwlzify.com', 'https://www.jwlzify.com', 'https://youngbil.github.io'];
 function _originAllowed(origin) {
   if (!origin) return false;
   if (ALLOWED_ORIGINS.includes(origin)) return true;
