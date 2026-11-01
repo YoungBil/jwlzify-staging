@@ -23,8 +23,14 @@
  *
  * OVERRIDES (below) pin what was checked by eye: an image position (1-based)
  * plus optional crop, or — when a product has NO image that passes the rule —
- * a generated image: the flux-image worker (fal Flux 2 Pro, square_hd, fixed
- * seed so a re-run reproduces it) from the item's desc as a product shot on white.
+ * a generated image: the flux-image worker (fal Flux 2 Pro, square_hd, recorded
+ * seed + prompt) from the item's desc as a product shot on white.
+ *
+ * DETERMINISM: the committed images/collections/*.jpg are canonical. A normal
+ * run skips every existing file, so it never changes them. Product photos
+ * re-download identically; GENERATED ones do NOT — the deployed flux-image
+ * worker returns a different render for the same seed + prompt (checked
+ * 2026-11-01) — so after --force on a generated item, re-check it by eye.
  *
  * Every output is resized to max 800px (longest side) and re-encoded JPEG
  * quality 80 on a white background (via Windows System.Drawing).
@@ -66,7 +72,8 @@ const GEN_SHAPE = {
 // ─────────────────────────────────────────────────────────────────
 // Per-item overrides, each checked by eye:
 //   { image: <1-based position>, crop?: {x,y,w,h} as fractions of the source image }
-//   { generate: { seed } }  — no product image passes the rule
+//   { generate: { seed, prompt? } }  — no product image passes the rule (or no source
+//     product); prompt fixes the exact wording, else item desc + shape + framing
 // ─────────────────────────────────────────────────────────────────
 const OVERRIDES = {
   'earring-05':  { image: 3, crop: { x: 0.50, y: 0.25,  w: 0.50, h: 0.50 } },  // only gold shot shows silver + gold pairs: crop to the gold pair
@@ -74,10 +81,13 @@ const OVERRIDES = {
   'bracelet-02': { generate: { seed: 2102 } }, // every photo is worn, on fabric, or a 2–6mm line-up (white-background one is a 4-bracelet stack)
   'bracelet-06': { generate: { seed: 2106 } }, // worn on a dark backdrop, or multi-colour line-ups on a glove
   'necklace-01': { generate: { seed: 2201 } }, // worn on a model, or an 8/10/12mm line-up on a bust
-  'necklace-02': { image: 1, crop: { x: 0.33, y: 0.00, w: 0.34, h: 0.56 } },  // set photo: crop to the pendant necklace (earrings + ring left out)
+  'necklace-02': { generate: { seed: 2202 } }, // worn on a model, or an 8/10/12mm line-up on a bust
+  'necklace-03': { generate: { seed: 2203 } }, // worn on a model, or a 2–6mm line-up
   'necklace-04': { generate: { seed: 2204 } }, // worn on a model, or a 2–6mm line-up
   'necklace-05': { image: 2 },                 // image 1 is worn on a model
-  'necklace-06': { image: 1, crop: { x: 0.00, y: 0.12, w: 0.47, h: 0.62 } }   // set photo: crop to the butterfly necklace (earrings left out)
+  'necklace-06': { generate: { seed: 2266,     // no source product (Paradise Gems sells no rope chain) — fixed prompt
+    prompt: 'a single 4mm twisted rope chain necklace in rich polished yellow gold, no stones, laid in an elegant loop, ' +
+            'flat-lay product photograph on a seamless white background, studio lighting, sharp focus' } }
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -216,12 +226,13 @@ async function getImage(src, width) {
   if (buf.length < 2000) throw new Error('image too small (' + buf.length + 'b)');
   return buf;
 }
-async function generateImage(item, seed) {
+// gen = the override's { seed, prompt? }; without a fixed prompt: item desc + shape + framing.
+async function generateImage(item, gen) {
+  const prompt = gen.prompt || [item.desc, GEN_SHAPE[item.type], GEN_FRAMING].filter(Boolean).join(' ');
   const res = await fetch(FLUX_WORKER, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Origin': ORIGIN },
-    body: JSON.stringify({ prompt: [item.desc, GEN_SHAPE[item.type], GEN_FRAMING].filter(Boolean).join(' '),
-                           image_size: 'square_hd', seed: seed }),
+    body: JSON.stringify({ prompt: prompt, image_size: 'square_hd', seed: gen.seed }),
   });
   if (!res.ok) throw new Error('Flux HTTP ' + res.status + ' ' + (await res.text()).slice(0, 200));
   const buf = Buffer.from(await res.arrayBuffer());
@@ -247,7 +258,7 @@ async function main() {
     try {
       const ov = OVERRIDES[item.id];
       if (ov && ov.generate) {
-        saveJpeg(await generateImage(item, ov.generate.seed), out, null);
+        saveJpeg(await generateImage(item, ov.generate), out, null);
         done.push(item.id);
         console.log('[gen] ', item.id.padEnd(12), '| metal:', item.specs.metalCode.padEnd(9), '| generated, seed', ov.generate.seed);
         await sleep(4500); // the worker allows 15 generations / min / IP

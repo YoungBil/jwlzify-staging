@@ -2863,7 +2863,18 @@ async function _loadIncomingBuyPiece() {
   // The Quote step itself: live spot prices → calc-price worker → itemized rows + total.
   await goStep(5);
   const q = LAB.quote;
-  if (q) document.getElementById('quoteHeading').textContent = `${LAB.pieceName} · ${typeLabel(LAB.type)}`;
+  // The quote heading names the piece. displayPricing rewrites it on every re-price
+  // (e.g. the page's own spot-price refresh), so re-apply it while this is still the
+  // ready-made piece.
+  const headingEl = document.getElementById('quoteHeading');
+  const pieceHeading = `${LAB.pieceName} · ${typeLabel(LAB.type)}`;
+  const keepPieceHeading = () => {
+    if (LAB.readyMade && LAB.imageUrl === LAB.readyMadeImageUrl && LAB.quote && headingEl.textContent !== pieceHeading) {
+      headingEl.textContent = pieceHeading;
+    }
+  };
+  keepPieceHeading();
+  new MutationObserver(keepPieceHeading).observe(headingEl, { childList: true, characterData: true, subtree: true });
   const quoteCents = q ? Math.round(q.total * 100) / 100 : null;
   console.log('[AILab] ready-made piece from collections:', piece.id, '| type:', LAB.type, '| metal:', LAB.material,
     '| stone:', LAB.gem, '| carats:', carats, '| stones:', count, '| collections modal price:', piece.price,

@@ -48,8 +48,7 @@
   // continuous-line necklace as 'tennis', other necklaces as their own chain key
   // (an AI Lab chain-style id) — so the Buy / Customize handoffs quote identically.
   var BRACELET_CHAIN_KEY = 'tennis';
-  var NECKLACE_CHAIN_KEY = { 'Tennis': 'tennis', 'Wave Tennis': 'tennis', 'Cuban Link': 'cuban',
-                             'Butterfly Pendant': 'tennis', 'Angel Charm': 'box', 'Halo Pendant': 'cable' };
+  var NECKLACE_CHAIN_KEY = { 'Tennis': 'tennis', 'Wave Tennis': 'tennis', 'Cuban Link': 'cuban', 'Rope': 'rope' };
   // Pendant plate size = the AI Lab's default pendant size (_pendantDims), so the worker
   // derives pendant grams here exactly as it does for that pendant in the AI Lab.
   var PENDANT_SIZE_MM = { w: 15, h: 20 };

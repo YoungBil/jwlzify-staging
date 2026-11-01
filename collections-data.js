@@ -8,7 +8,8 @@
  *   { id, category, type, name, productOnly, sourceUrl, desc, specs:{...} }
  *   id is "<category>-NN"  (ring-01 ... necklace-06) -> image is images/collections/<id>.jpg
  *   sourceUrl is the Paradise Gems product page the photo comes from (used with
- *   permission); the image script fetches <sourceUrl>.json.
+ *   permission); the image script fetches <sourceUrl>.json. null = no source
+ *   product (the image is generated — see the image script's OVERRIDES).
  *
  * Only what we sell: metalCode 925silver | 10ctgold | 14ctgold; stoneType
  * lab_diamond | moissanite_vvsd | none (colourless stones only). Each item's
@@ -143,21 +144,22 @@
     { id: 'necklace-01', name: 'Cuban 12mm', style: 'Cuban Link', metal: '925silver', stone: 'moissanite_vvsd', carats: 20.00, stoneCount: 1000,
       sourceUrl: PG + 'moissanite-cuban-chain-12mm-925-silver-men-women-vvs-gra',
       desc: 'A 12mm iced Cuban link chain in 925 sterling silver, every link prong-set with colourless moissanite, 20.00 ct total.' },
-    { id: 'necklace-02', name: 'Emerald Halo Pendant', style: 'Halo Pendant', metal: '925silver', stone: 'lab_diamond', carats: 1.00, stoneCount: 20,
-      sourceUrl: PG + '4-carat-emerald-cut-halo-moissanite-3-piece-jewelry-set-vvs-gra',
-      desc: 'An emerald-cut halo pendant necklace in 925 sterling silver: one emerald-cut colourless lab diamond inside a pavé halo on a fine cable chain, 1.00 ct est. total.' },
-    { id: 'necklace-03', name: 'Angel Charm', style: 'Angel Charm', metal: '925silver', stone: 'moissanite_vvsd', carats: 1.50, stoneCount: 60,
-      sourceUrl: PG + 'vvs-moissanite-hip-hop-angel-charm-925-silver-box-chain',
-      desc: 'An angel charm necklace in 925 sterling silver, the winged angel fully iced with colourless moissanite pavé on a box chain, 1.50 ct est. total.' },
+    { id: 'necklace-02', name: 'Cuban 8mm', style: 'Cuban Link', metal: '14ctgold', stone: 'lab_diamond', carats: 14.00, stoneCount: 900,
+      sourceUrl: PG + 'moissanite-cuban-link-chain-8mm-14k-gold-925-silver-men-women-vvs-d-color-gra-certified-passes-diamond-tester',
+      desc: 'An 8mm iced Cuban link chain in 14k yellow gold, every link prong-set with colourless lab diamonds, 14.00 ct total.' },
+    { id: 'necklace-03', name: 'Tennis 2mm', style: 'Tennis', metal: '925silver', stone: 'moissanite_vvsd', carats: 12.00, stoneCount: 218,
+      sourceUrl: PG + 'moissanite-tennis-chain-moissanite-tennis-chain-2mm-925-silver-men-women-vvs-gra',
+      desc: 'A fine 2mm tennis chain in 925 sterling silver with a continuous line of round colourless moissanite, 12.00 ct total.' },
     { id: 'necklace-04', name: 'Tennis 4mm', style: 'Tennis', metal: '14ctgold', stone: 'lab_diamond', carats: 27.00, stoneCount: 109,
       sourceUrl: PG + 'moissanite-tennis-chain-4mm-14k-gold-men-women-vvs-gra',
       desc: 'A 4mm tennis chain in 14k yellow gold with a continuous line of round colourless lab diamonds, 27.00 ct total.' },
     { id: 'necklace-05', name: 'Wave Tennis', style: 'Wave Tennis', metal: '14ctgold', stone: 'moissanite_vvsd', carats: 15.00, stoneCount: 160,
       sourceUrl: PG + 'moissanite-wave-tennis-necklace-925-silver-14k-gold-vvs-d-color',
       desc: 'A wave tennis necklace in 14k yellow gold, a continuous line of round colourless moissanite curving in soft waves, 15.00 ct est. total.' },
-    { id: 'necklace-06', name: 'Butterfly Pendant', style: 'Butterfly Pendant', metal: '925silver', stone: 'lab_diamond', carats: 2.00, stoneCount: 180,
-      sourceUrl: PG + '3-carat-butterfly-moissanite-necklace-earrings-set-vvs-gra',
-      desc: 'A butterfly pendant necklace in 925 sterling silver: a pavé butterfly of colourless lab diamonds on a tennis chain, 2.00 ct est. total.' }
+    // Paradise Gems sells no rope chain: no source page; the image is generated (fetch-collection-images.js OVERRIDES).
+    { id: 'necklace-06', name: 'Rope Chain', style: 'Rope', metal: '14ctgold', stone: 'none', carats: 0, stoneCount: 0,
+      sourceUrl: null,
+      desc: 'A 4mm twisted rope chain necklace in 14k yellow gold, a clean all-metal design of polished twisted links.' }
   ];
 
   function category(id) { return id.slice(0, id.indexOf('-')); }
