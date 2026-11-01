@@ -16,7 +16,8 @@
  * all three metals.
  *
  * carats    — the source listing's carat weight (pairs for earrings). Where the
- *             listing gives none, an estimate from the photo (marked "est.").
+ *             listing gives none, an estimate from the photo (marked "est."); a
+ *             piece sold in a set gets an estimated share of the set's total.
  * stoneCount — the listing's count, else an estimate from the photo. Bracelets
  *             are the exception: the AI Lab derives a bracelet's stone count
  *             deterministically (calcBraceletStoneCount at its default 7in), so
@@ -88,9 +89,9 @@
     { id: 'pendant-03', name: 'Lightning Bolt', style: 'Lightning Bolt', metal: '925silver', stone: 'moissanite_vvsd', carats: 5.97, stoneCount: 120,
       sourceUrl: PG + 'vvs-moissanite-lightning-bolt-pendant-iced-out-925-silver',
       desc: 'A lightning bolt pendant in 925 sterling silver fully iced with 5.97 ct total of colourless moissanite pavé.' },
-    { id: 'pendant-04', name: 'Lion Head', style: 'Lion', metal: '925silver', stone: 'lab_diamond', carats: 2.23, stoneCount: 150,
-      sourceUrl: PG + 'vvs-moissanite-lion-pendant-iced-out-925-sterling-silver',
-      desc: 'A lion head pendant in 925 sterling silver iced with 2.23 ct total of colourless lab diamond pavé through the mane and face.' },
+    { id: 'pendant-04', name: 'Crowned King', style: 'Crown', metal: '925silver', stone: 'moissanite_vvsd', carats: 8.60, stoneCount: 300,
+      sourceUrl: PG + 'vvs-moissanite-king-pendant-iced-out-925-silver-hip-hop',
+      desc: 'A KING nameplate pendant in 925 sterling silver, the block letters topped by a small crown and fully iced with 8.60 ct total of colourless moissanite pavé.' },
     { id: 'pendant-05', name: 'Praying Hands', style: 'Praying Hands', metal: '925silver', stone: 'moissanite_vvsd', carats: 3.97, stoneCount: 130,
       sourceUrl: PG + 'vvs-moissanite-praying-hands-cross-pendant-iced-out-925-silver',
       desc: 'A praying hands cross pendant in 925 sterling silver iced with 3.97 ct total of colourless moissanite pavé.' },
@@ -102,12 +103,12 @@
     { id: 'earring-01', name: 'Round Solitaire Studs', style: 'Solitaire Stud', form: 'stud', metal: '925silver', stone: 'moissanite_vvsd', carats: 2.00, stoneCount: 2,
       sourceUrl: PG + 'moissanite-solitaire-stud-earrings-for-men-women-0-5-6ct-vvs-d-color-gra-certified-925-silver-screw-back',
       desc: 'A pair of solitaire stud earrings in 925 sterling silver, each set with one round colourless moissanite, 2.00 ct for the pair.' },
-    { id: 'earring-02', name: 'Princess Studs', style: 'Princess Stud', form: 'stud', metal: '14ctgold', stone: 'lab_diamond', carats: 1.80, stoneCount: 2,
-      sourceUrl: PG + 'moissanite-princess-cut-stud-earrings-men-women-vvs-gra-screw-back',
-      desc: 'A pair of princess-cut stud earrings in 14k yellow gold, each set with one square colourless lab diamond in four prongs, 1.80 ct for the pair.' },
-    { id: 'earring-03', name: 'Triple Row Hoops', style: 'Triple Row Hoop', form: 'hoop', metal: '14ctgold', stone: 'moissanite_vvsd', carats: 2.00, stoneCount: 64,
-      sourceUrl: PG + 'moissanite-triple-row-iced-out-hoop-earrings-14k-gold-vvs-gra',
-      desc: 'A pair of triple row hoop earrings in 14k yellow gold, iced with a row of baguettes between two rows of round colourless moissanite, 2.00 ct est. for the pair.' },
+    { id: 'earring-02', name: 'Clover Studs', style: 'Clover Stud', form: 'stud', metal: '14ctgold', stone: 'lab_diamond', carats: 1.00, stoneCount: 48,
+      sourceUrl: PG + 'moissanite-four-leaf-clover-stud-earrings-9-5mm-14k-gold-vvs-gra',
+      desc: 'A pair of 9.5mm four-leaf clover stud earrings in 14k yellow gold, each with four round colourless lab diamonds framed by pavé petals, 1.00 ct for the pair.' },
+    { id: 'earring-03', name: 'Butterfly Studs', style: 'Butterfly Stud', form: 'stud', metal: '925silver', stone: 'lab_diamond', carats: 1.00, stoneCount: 60,
+      sourceUrl: PG + 'moissanite-butterfly-stud-earrings-women-vvs-d-color-gra-925-silver',
+      desc: 'A pair of 12mm butterfly stud earrings in 925 sterling silver, each butterfly pavé-set with colourless lab diamonds, 1.00 ct for the pair.' },
     { id: 'earring-04', name: 'Pavé Huggies', style: 'Pavé Huggie', form: 'hoop', metal: '925silver', stone: 'lab_diamond', carats: 1.00, stoneCount: 30,
       sourceUrl: PG + '1-ctw-moissanite-pave-huggie-hoop-earrings-14k-gold-over-925-silver-gra-certified',
       desc: 'A pair of pavé huggie hoop earrings in 925 sterling silver, each with a single row of round colourless lab diamonds, 1.00 ct for the pair.' },
@@ -142,21 +143,21 @@
     { id: 'necklace-01', name: 'Cuban 12mm', style: 'Cuban Link', metal: '925silver', stone: 'moissanite_vvsd', carats: 20.00, stoneCount: 1000,
       sourceUrl: PG + 'moissanite-cuban-chain-12mm-925-silver-men-women-vvs-gra',
       desc: 'A 12mm iced Cuban link chain in 925 sterling silver, every link prong-set with colourless moissanite, 20.00 ct total.' },
-    { id: 'necklace-02', name: 'Cuban 8mm', style: 'Cuban Link', metal: '14ctgold', stone: 'lab_diamond', carats: 14.00, stoneCount: 900,
-      sourceUrl: PG + 'moissanite-cuban-link-chain-8mm-14k-gold-925-silver-men-women-vvs-d-color-gra-certified-passes-diamond-tester',
-      desc: 'An 8mm iced Cuban link chain in 14k yellow gold, every link prong-set with colourless lab diamonds, 14.00 ct total.' },
-    { id: 'necklace-03', name: 'Tennis 2mm', style: 'Tennis', metal: '925silver', stone: 'moissanite_vvsd', carats: 12.00, stoneCount: 218,
-      sourceUrl: PG + 'moissanite-tennis-chain-moissanite-tennis-chain-2mm-925-silver-men-women-vvs-gra',
-      desc: 'A fine 2mm tennis chain in 925 sterling silver with a continuous line of round colourless moissanite, 12.00 ct total.' },
+    { id: 'necklace-02', name: 'Emerald Halo Pendant', style: 'Halo Pendant', metal: '925silver', stone: 'lab_diamond', carats: 1.00, stoneCount: 20,
+      sourceUrl: PG + '4-carat-emerald-cut-halo-moissanite-3-piece-jewelry-set-vvs-gra',
+      desc: 'An emerald-cut halo pendant necklace in 925 sterling silver: one emerald-cut colourless lab diamond inside a pavé halo on a fine cable chain, 1.00 ct est. total.' },
+    { id: 'necklace-03', name: 'Angel Charm', style: 'Angel Charm', metal: '925silver', stone: 'moissanite_vvsd', carats: 1.50, stoneCount: 60,
+      sourceUrl: PG + 'vvs-moissanite-hip-hop-angel-charm-925-silver-box-chain',
+      desc: 'An angel charm necklace in 925 sterling silver, the winged angel fully iced with colourless moissanite pavé on a box chain, 1.50 ct est. total.' },
     { id: 'necklace-04', name: 'Tennis 4mm', style: 'Tennis', metal: '14ctgold', stone: 'lab_diamond', carats: 27.00, stoneCount: 109,
       sourceUrl: PG + 'moissanite-tennis-chain-4mm-14k-gold-men-women-vvs-gra',
       desc: 'A 4mm tennis chain in 14k yellow gold with a continuous line of round colourless lab diamonds, 27.00 ct total.' },
     { id: 'necklace-05', name: 'Wave Tennis', style: 'Wave Tennis', metal: '14ctgold', stone: 'moissanite_vvsd', carats: 15.00, stoneCount: 160,
       sourceUrl: PG + 'moissanite-wave-tennis-necklace-925-silver-14k-gold-vvs-d-color',
       desc: 'A wave tennis necklace in 14k yellow gold, a continuous line of round colourless moissanite curving in soft waves, 15.00 ct est. total.' },
-    { id: 'necklace-06', name: 'Cuban 10mm', style: 'Cuban Link', metal: '10ctgold', stone: 'lab_diamond', carats: 18.00, stoneCount: 1000,
-      sourceUrl: PG + 'moissanite-cuban-chain-10mm-14k-gold-925-silver-men-women-vvs-gra',
-      desc: 'A 10mm iced Cuban link chain in 10k yellow gold, every link prong-set with colourless lab diamonds, 18.00 ct total.' }
+    { id: 'necklace-06', name: 'Butterfly Pendant', style: 'Butterfly Pendant', metal: '925silver', stone: 'lab_diamond', carats: 2.00, stoneCount: 180,
+      sourceUrl: PG + '3-carat-butterfly-moissanite-necklace-earrings-set-vvs-gra',
+      desc: 'A butterfly pendant necklace in 925 sterling silver: a pavé butterfly of colourless lab diamonds on a tennis chain, 2.00 ct est. total.' }
   ];
 
   function category(id) { return id.slice(0, id.indexOf('-')); }

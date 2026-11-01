@@ -4,7 +4,7 @@
  *   - category filtering (sidebar tabs) — every piece in a category renders at once
  *   - lazy images + shimmer + fade-in + branded fallback
  *   - the spec detail modal + its two AI Lab handoffs:
- *       "Buy This Piece"         → sessionStorage jwlz_buy_piece       → AI Lab Order step
+ *       "Buy This Piece"         → sessionStorage jwlz_buy_piece       → AI Lab Quote step
  *       "Customize This Design"  → sessionStorage jwlz_customize_piece → AI Lab Refine step
  */
 (function () {
@@ -39,7 +39,7 @@
   // Pricing happens in the calc-price worker (server-side formula). One BATCH
   // request prices a whole category render; results are cached per item+metal so
   // tab flips and modal re-opens don't refetch.
-  var _priceCache = {};   // "itemId|metalCode" → { price: rounded USD, grams: worker-derived }
+  var _priceCache = {};   // "itemId|metalCode" → { price: USD to the cent, grams: worker-derived }
   function cacheKey(item, metalCode) { return item.id + '|' + metalCode; }
   // Style → chain/structure KEY for the worker's weight model. Names only — the
   // grams-per-cm numbers live in the calc-price worker, never in client code.
@@ -48,7 +48,8 @@
   // continuous-line necklace as 'tennis', other necklaces as their own chain key
   // (an AI Lab chain-style id) — so the Buy / Customize handoffs quote identically.
   var BRACELET_CHAIN_KEY = 'tennis';
-  var NECKLACE_CHAIN_KEY = { 'Tennis': 'tennis', 'Wave Tennis': 'tennis', 'Cuban Link': 'cuban' };
+  var NECKLACE_CHAIN_KEY = { 'Tennis': 'tennis', 'Wave Tennis': 'tennis', 'Cuban Link': 'cuban',
+                             'Butterfly Pendant': 'tennis', 'Angel Charm': 'box', 'Halo Pendant': 'cable' };
   // Pendant plate size = the AI Lab's default pendant size (_pendantDims), so the worker
   // derives pendant grams here exactly as it does for that pendant in the AI Lab.
   var PENDANT_SIZE_MM = { w: 15, h: 20 };
@@ -72,7 +73,8 @@
             console.warn('[Collections] price unavailable:', p.item.id, '| metal:', p.metal, '|', r && r.error);
             return;
           }
-          var price = Math.round(r.finalPrice);
+          // To the cent — the AI Lab quote shows the same worker price to the cent.
+          var price = Math.round(r.finalPrice * 100) / 100;
           console.log('[Collections] price | item:', p.item.id, '| metal:', p.metal,
             '| stone:', (p.item.specs || {}).stoneType, '| grams:', r.metalGrams, '| finalPrice:', price);
           if (price < 50 || price > 100000) {
@@ -92,7 +94,10 @@
     var c = _priceCache[cacheKey(item, metalCode)];
     return (c != null && c.grams != null) ? c.grams : null;
   }
-  function fmtPrice(n) { return (n == null) ? '—' : '$' + n.toLocaleString('en-US') + ' USD'; }
+  function fmtPrice(n) {
+    return (n == null) ? '—'
+      : '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
+  }
 
   // ── Sidebar counts -> real number of items per category ──
   Array.prototype.forEach.call(filterBtns.querySelectorAll('.coll-filter-btn'), function (btn) {
@@ -331,7 +336,7 @@
     };
   }
 
-  // "Buy This Piece" → the ready-made piece goes straight to the AI Lab Order step
+  // "Buy This Piece" → the ready-made piece goes straight to the AI Lab Quote step
   // (re-priced there through the same worker). Written synchronously before the <a> navigates.
   if (mBuy) mBuy.addEventListener('click', function () {
     if (!_openItem) return;

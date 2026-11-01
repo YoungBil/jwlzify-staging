@@ -2728,7 +2728,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ── Load an incoming collection piece ("Customize This Design" / "Buy This Piece") ──
    collections.html hands a piece over via sessionStorage: jwlz_customize_piece
-   jumps straight to the Refine step, jwlz_buy_piece straight to the Order step.
+   jumps straight to the Refine step, jwlz_buy_piece straight to the Quote step.
    Both load the design + specs through _applyIncomingPiece, so the quote sends the
    worker the identical request the collections modal priced.
    No incoming piece → the AI Lab starts fresh exactly as before. */
@@ -2842,9 +2842,10 @@ function _loadIncomingCollectionPiece() {
 }
 window.addEventListener('DOMContentLoaded', _loadIncomingCollectionPiece);
 
-// "Buy This Piece" → a ready-made piece skips Refine + Try On: price it through the
-// normal quote path (same worker, so it must equal the modal price), then go
-// straight to the Order step. submitOrder records it as readyMade with its id + name.
+// "Buy This Piece" → a ready-made piece skips Refine + Try On and lands on the Quote
+// step, priced there by the normal quote path (same worker, so it must equal the
+// modal price). LAB carries readyMade + collectionId through "Continue to Order"
+// into submitOrder, which records them with the piece name.
 async function _loadIncomingBuyPiece() {
   const piece = _readIncomingPiece('jwlz_buy_piece');
   if (!piece) return;
@@ -2859,25 +2860,15 @@ async function _loadIncomingBuyPiece() {
     const el = document.getElementById(id); if (el) el.src = LAB.imageUrl;
   });
 
-  // Normal quote pricing — what goStep(5) runs, minus the design auto-save.
-  await fetchSpotPrices();
-  if (LAB.type === 'bracelet') { _applyBraceletSpecs(); _renderBraceletCountPanel(); }
-  await displayPricing(LAB.material, LAB.gem, LAB.type);
-
-  await goStep(6);
+  // The Quote step itself: live spot prices → calc-price worker → itemized rows + total.
+  await goStep(5);
   const q = LAB.quote;
-  const _sizeTag = (LAB.type === 'ring')
-    ? ` · US size ${(window.jwlSpecifications && window.jwlSpecifications.ringSize) || 7}` : '';
-  document.getElementById('orderSummaryTitle').textContent =
-    `${LAB.pieceName} · ${typeLabel(LAB.type)} · ${matLabel(LAB.material)}${_sizeTag}`;
-  // Same format as the collections modal (whole dollars) so the two read identically.
-  if (q && q.total != null) {
-    document.getElementById('orderSummaryPrice').textContent = '$' + Math.round(q.total).toLocaleString('en-US') + ' USD';
-  }
+  if (q) document.getElementById('quoteHeading').textContent = `${LAB.pieceName} · ${typeLabel(LAB.type)}`;
+  const quoteCents = q ? Math.round(q.total * 100) / 100 : null;
   console.log('[AILab] ready-made piece from collections:', piece.id, '| type:', LAB.type, '| metal:', LAB.material,
     '| stone:', LAB.gem, '| carats:', carats, '| stones:', count, '| collections modal price:', piece.price,
-    '| quote price:', q ? Math.round(q.total) : null, '| match:', !!(q && Math.round(q.total) === piece.price),
-    '| jumped to order step');
+    '| quote price:', quoteCents, '| match:', quoteCents != null && quoteCents === piece.price,
+    '| jumped to quote step');
 }
 window.addEventListener('DOMContentLoaded', _loadIncomingBuyPiece);
 

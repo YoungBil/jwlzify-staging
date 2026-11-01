@@ -55,7 +55,7 @@ Google Fonts, Firebase from gstatic CDN, Three.js via CDN importmap.
 |---|---|
 | `ailab.html` | **The app.** ~8,900 lines: all six steps, generation, try-on, pricing, ordering. Everything below is about this file unless stated. |
 | `index.html` | Homepage/marketing. Truth-tightened 2026-07-04 (no fake reviews, no Antwerp/Toronto, no 3D/blockchain claims, gold in "k", © 2026). |
-| `collections.html` + `collections-data.js` + `collections-gallery.js` | Static 30-item gallery (5 categories × 6) of ready-made pieces, hand-written in `collections-data.js` from Paradise Gems products (photos used with permission; `sourceUrl` per item; carats from the listings, bracelet stone counts = the AI Lab's own deterministic setting count). Prices via `pricing.js` → calc-price with the same inputs the AI Lab sends. Modal: "Buy This Piece" (→ AI Lab Order step, `readyMade` order) and "Customize This Design" (→ Refine step), both via sessionStorage. |
+| `collections.html` + `collections-data.js` + `collections-gallery.js` | Static 30-item gallery (5 categories × 6) of ready-made pieces, hand-written in `collections-data.js` from Paradise Gems products (photos used with permission; `sourceUrl` per item; carats from the listings, bracelet stone counts = the AI Lab's own deterministic setting count). Prices via `pricing.js` → calc-price with the same inputs the AI Lab sends. Modal: "Buy This Piece" (→ AI Lab Quote step, `readyMade` order) and "Customize This Design" (→ Refine step), both via sessionStorage. |
 | `pricing.js` | Shared pricing formula for collections. **Manually mirrors** `calculatePrice()` in ailab.html — must be kept in sync by hand (stated in its header). |
 | `firebase-auth.js` | Firebase init (project `jwlzify-193c2`), Google sign-in modal, header auth UI. Exposes `window._jwlApp`, `window._jwlAuth`, `signInWithGoogle()`, `signOut()`. |
 | `firestore-service.js` | `window.JWL.saveDesign/saveOrder/getDesigns/getOrders` → `users/{uid}/designs` and `users/{uid}/orders`. |
@@ -63,7 +63,7 @@ Google Fonts, Firebase from gstatic CDN, Three.js via CDN importmap.
 | `about/support/shipping/returns/warranty/legal/orders/account/authenticity.html` | Static content pages sharing header/footer markup (copy-pasted per page, no shared component). |
 | `*-worker.js` + `*-wrangler.toml` | Cloudflare Worker sources (refreshed 2026-07-05 with origin+rate-limit security; see constraint #2). Deploy = dashboard paste only. (`gemini-image-worker.js` was deleted 2026-07-05 when Gemini was removed from image generation.) |
 | `specs/` | Implementation specs for post-window work (2026-07-05): `stone-compositing.md` (guaranteed exact counts via sprite overlay), `flux-kontext-refine.md` (instruction img2img refine), `stripe-checkout.md` (30% deposit checkout + order status pipeline). Written to be executable by a weaker model without re-discovering the codebase. |
-| `fetch-collection-images.js` | One-time Node script that downloads the 30 gallery photos from each item's Paradise Gems product JSON (silver photo for 925, yellow-gold for 10k/14k; per-item OVERRIDES map pins image index + crop), max 800px JPEG q80 (Windows System.Drawing); skips existing; not part of the site. Replaced the old Flux `generate-collection-images.js` (2026-11-01). |
+| `fetch-collection-images.js` | One-time Node script for the 30 gallery photos. Image rule: the piece alone on white/very light neutral (no model/body part, fabric, dark backdrop or size line-up). Takes the first Paradise Gems product-JSON image that passes (metal label, alt-text filter, border-pixel lightness check); per-item OVERRIDES pin image index + crop, or generate via the flux-image worker (`Origin: https://jwlzify.com`, square_hd, fixed seed, prompt = item desc + framing) when no product photo passes. Max 800px JPEG q80 (Windows System.Drawing); skips existing (`--force` to redo); not part of the site. |
 | `test-img2img.js` | Ad-hoc Node smoke test for the hf-image worker (txt2img → img2img). Not part of the site. |
 | `.env` | Local only, gitignored. Never commit. |
 
@@ -96,9 +96,8 @@ handoffs.
 
 Cross-page entries: `account.html` → sessionStorage `jwlzify_load_design` (jumps to
 step 3 with a saved design); `collections.html` → sessionStorage `jwlz_customize_piece`
-(jumps to step 3 with a catalogue piece) or `jwlz_buy_piece` (ready-made piece: priced via
-the normal quote path, jumps to step 6; `submitOrder` records `readyMade`, `collectionId`,
-`pieceName`). All are `DOMContentLoaded` listeners in the main script (search
+(jumps to step 3 with a catalogue piece) or `jwlz_buy_piece` (ready-made piece: jumps to the
+step-5 quote via `goStep(5)`; `submitOrder` records `readyMade`, `collectionId`, `pieceName`). All are `DOMContentLoaded` listeners in the main script (search
 `_loadIncomingCollectionPiece` / `_loadIncomingBuyPiece`; shared `_applyIncomingPiece`).
 
 ### Per-type spec flows (step 2)
